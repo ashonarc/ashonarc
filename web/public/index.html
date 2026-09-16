@@ -1109,7 +1109,7 @@ function renderPane(t) {
     }
     if (S.tab === "buy") {
       pane.innerHTML = `<div class="lbl"><span>YOU PAY</span></div><div class="inrow"><input id="buy-in" placeholder="0.00" inputmode="decimal" autocomplete="off"><span>USDC</span></div>
-        <div class="qrow" style="margin-top:14px"><span>YOU RECEIVE</span><b id="buy-out">—</b></div><div class="qrow"><span>FEE 3% → 85% POOL</span><b id="buy-fee">—</b></div><div class="qrow warn" id="buy-tax" hidden><span>SNIPE TAX · WAIT A FEW SECONDS</span><b id="buy-tax-v"></b></div>
+        <div class="qrow" style="margin-top:14px"><span>YOU RECEIVE</span><b id="buy-out">—</b></div><div class="qrow"><span>FEE 3% → ${(t.poolBps || 8500) / 100}% POOL</span><b id="buy-fee">—</b></div><div class="qrow warn" id="buy-tax" hidden><span>SNIPE TAX · WAIT A FEW SECONDS</span><b id="buy-tax-v"></b></div>
         <button class="b b-hot" style="width:100%;margin-top:16px;font-size:15px" id="buy-go">${cta("Buy " + sym)}</button><div class="status" id="tr-status"></div>`;
       let q = null;
       const quote = async () => { const v = $("buy-in").value; if (!v || num(v) <= 0) { q = null; $("buy-out").textContent = "—"; $("buy-fee").textContent = "—"; $("buy-tax").hidden = true; return; }
