@@ -1,0 +1,19 @@
+.env
+.env.*
+__pycache__/
+artifacts/
+broadcast/
+broadcast/**/dry-run/
+cache/
+lcov.info
+/lib/
+node_modules/
+out/
+web/.cron-secret.txt
+web/.env*
+!.env.example
+
+# private planning notes and internal design documents stay local
+/plans/
+/docs/superpowers/
+*.zip

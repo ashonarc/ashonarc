@@ -1,0 +1,17 @@
+[Unit]
+Description=AshonPons keeper pass
+After=ashonpons.service
+Requires=ashonpons.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/ashonpons/keeper-tick.sh
+User=ashonpons
+Group=ashonpons
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ashonpons-keeper

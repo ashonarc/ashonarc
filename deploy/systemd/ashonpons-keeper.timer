@@ -1,0 +1,14 @@
+[Unit]
+Description=Run the AshonPons keeper every 15 minutes
+
+[Timer]
+# Vercel's Hobby plan caps cron at one run per day, which is far too slow for a
+# job whose whole purpose is to keep displayed backing close to earned backing.
+# On our own box the interval is ours to choose.
+OnBootSec=3min
+OnUnitActiveSec=15min
+AccuracySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

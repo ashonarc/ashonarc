@@ -1,0 +1,40 @@
+[Unit]
+Description=AshonPons launchpad site and read API
+Documentation=https://ashonarc.xyz
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ashonpons
+Group=ashonpons
+WorkingDirectory=/opt/ashonpons/app
+EnvironmentFile=/opt/ashonpons/.env
+ExecStart=/usr/bin/node /opt/ashonpons/app/server.mjs
+Restart=always
+RestartSec=3
+
+# The process reads one config file, serves static files and talks to one RPC
+# endpoint. It has no reason to write anywhere, gain privileges, or see the
+# rest of the filesystem, so it is not allowed to.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictSUIDSGID=true
+LockPersonality=true
+
+# 911 MB of RAM on this box, and sshd lives in the same memory. A runaway here
+# must kill only itself.
+MemoryMax=500M
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ashonpons
+
+[Install]
+WantedBy=multi-user.target

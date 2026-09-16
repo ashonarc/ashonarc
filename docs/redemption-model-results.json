@@ -1,0 +1,59 @@
+{
+  "scope": "Integer accounting only, no deployed-contract or AMM verification",
+  "denominator": "totalSupply before burn; includes locked and pooled tokens",
+  "random_sequences": 10000,
+  "maximum_operations_per_sequence": 20,
+  "seed": 20260907,
+  "example_start": {
+    "reserve_eth": 100,
+    "supply_tokens": 1000000000
+  },
+  "independent_quotes_at_example_start": [
+    {
+      "burn_tokens": 1000000,
+      "payout_wei": "100000000000000000",
+      "payout_eth": "1/10"
+    },
+    {
+      "burn_tokens": 10000000,
+      "payout_wei": "1000000000000000000",
+      "payout_eth": "1"
+    },
+    {
+      "burn_tokens": 100000000,
+      "payout_wei": "10000000000000000000",
+      "payout_eth": "10"
+    }
+  ],
+  "distribution": {
+    "third_party": "85% reserve / 10% issuer / 5% official pool",
+    "official": "90% reserve / 10% issuer",
+    "rounding": "issuer and platform round down; reserve absorbs the remainder",
+    "platform_route": "now < OFFICIAL_DEADLINE -> official vault, else platform address"
+  },
+  "terminal_state": {
+    "model": "TimedPool: redeem while now < deadline, issuer sweep while now >= deadline",
+    "checked": [
+      "adjacent non-overlapping windows",
+      "sweep pays exact residual",
+      "single-shot sweep guarded by flag not balance",
+      "no funding after deadline",
+      "rejected calls leave state unchanged",
+      "lifecycle conservation over 2,000 random sequences"
+    ],
+    "lifecycle_sequences": 2000
+  },
+  "not_validated": [
+    "bytecode",
+    "allowances",
+    "EVM rollback",
+    "reentrancy",
+    "fee sweep",
+    "graduation",
+    "MEV profitability",
+    "AMM liquidity",
+    "gas cost",
+    "block.timestamp manipulation"
+  ],
+  "tests_passed": 21
+}

@@ -1,0 +1,7 @@
+# Keep LF everywhere: shell scripts and the deploy pipeline break on CRLF,
+# and Windows checkouts default to converting.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.hex -text
+*.pem binary

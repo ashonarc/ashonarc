@@ -1,0 +1,1345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AshonArc — Burn for USDC</title>
+<meta name="description" content="Trading fees fill a pool. Burn your tokens, withdraw your share in USDC. A launchpad on Arc.">
+<link rel="icon" type="image/png" sizes="64x64" href="/logo-64.png">
+<link rel="icon" type="image/png" sizes="256x256" href="/logo-256.png">
+<link rel="apple-touch-icon" href="/avatar.png">
+<meta property="og:title" content="AshonArc — Not deflation. It's a withdrawal.">
+<meta property="og:description" content="Every trade pays 3%. 85% lands in that token's own USDC pool. Burn to withdraw your exact share.">
+<meta property="og:image" content="https://ashonarc.xyz/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@AshonArc">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#151514;--ink:#f2f2f0;--hot:#fc5201;--hot2:#ff7a3a;--dim:#8c8c8a;--mute:#7a7a76;--line:#2a2a28;--ok:#3ddc84;--bad:#ff5c5c;--black:#111;--well:#0e0e0d;
+  --display:"Archivo Black","Arial Black",Impact,sans-serif;--body:"Archivo",ui-sans-serif,system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--hot);text-decoration:none}a:hover{color:var(--hot2)}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.45}
+input,textarea{font-family:inherit}
+input::placeholder,textarea::placeholder{color:var(--mute)}
+input:focus,textarea:focus{outline:none;border-color:var(--hot)!important}
+img{display:block}
+[hidden]{display:none!important}
+.mono{font-family:var(--mono)}
+.disp{font-family:var(--display)}
+.tab{font-variant-numeric:tabular-nums}
+.k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.in{max-width:1320px;margin:0 auto;padding:0 32px;width:100%}
+.app{min-height:100vh;display:flex;flex-direction:column}
+main{flex:1}
+
+@keyframes emberRise{0%{transform:translate(0,0) scale(1);opacity:0}12%{opacity:1}100%{transform:translate(var(--dx),-380px) scale(.1);opacity:0}}
+@keyframes ashFall{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),200px) rotate(260deg);opacity:0}}
+@keyframes flicker{0%,100%{transform:scale(1);filter:drop-shadow(0 0 22px rgba(252,82,1,.6))}50%{transform:scale(1.05);filter:drop-shadow(0 0 44px rgba(252,82,1,.95))}}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes liquid{0%,100%{transform:translateX(0)}50%{transform:translateX(-24px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes flash{0%{opacity:.9}100%{opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.flame{animation:flicker 1.4s ease-in-out infinite}
+.ember,.ashp{position:absolute;pointer-events:none}
+.particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.flash{position:fixed;inset:0;background:var(--hot);pointer-events:none;z-index:30;animation:flash .9s ease-out forwards}
+.view>*{animation:rise .45s ease-out both}
+.view>*:nth-child(2){animation-delay:.06s}.view>*:nth-child(3){animation-delay:.12s}.view>*:nth-child(4){animation-delay:.18s}.view>*:nth-child(5){animation-delay:.24s}
+
+/* ---------- header ---------- */
+.hdr{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:2px solid var(--ink)}
+.hdr .in{min-height:68px;display:flex;align-items:stretch;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;color:var(--ink);padding-right:28px;border-right:2px solid var(--ink);min-height:66px;white-space:nowrap}
+.brand img{width:34px;height:34px}
+.brand span{font-family:var(--display);font-size:18px;letter-spacing:-.01em}
+.nav{display:flex;min-height:66px;font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.nav a{display:flex;align-items:center;padding:0 22px;color:var(--ink);border-right:2px solid var(--ink)}
+.nav a:hover{color:var(--hot)}
+.nav a.on{background:var(--ink);color:var(--black)}
+.hdr .sp{flex:1}
+.hdr .right{display:flex;align-items:center;min-height:66px;white-space:nowrap}
+.net{font-family:var(--mono);font-size:12px;color:var(--dim);display:flex;align-items:center;gap:8px;margin-right:18px}
+.net i{width:8px;height:8px;background:var(--ok);display:inline-block;animation:blink 1.6s infinite}
+.net i.bad{background:var(--bad);animation:none}
+.btn-line{font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);border:2px solid var(--ink);padding:9px 14px;margin-right:10px;background:transparent;display:inline-block}
+.btn-line:hover{background:var(--ink);color:var(--black)}
+.btn-wallet{background:var(--hot);color:var(--black);border:2px solid var(--hot);padding:9px 16px;font-weight:600;font-size:12px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase}
+.btn-wallet:hover{background:var(--black);color:var(--hot)}
+.strip{border-bottom:2px solid var(--ink);background:var(--black);font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+.strip .in{padding:10px 32px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.strip b{color:var(--hot);font-weight:600}
+.strip a{text-decoration:underline}
+
+/* ---------- buttons ---------- */
+.b{border:2px solid;padding:14px 22px;font-family:var(--display);font-size:16px;text-transform:uppercase;letter-spacing:.02em;display:inline-flex;align-items:center;justify-content:center;gap:10px;background:transparent;line-height:1.2}
+.b-hot{background:var(--hot);color:var(--black);border-color:var(--hot)}.b-hot:hover{background:var(--black);color:var(--hot)}
+.b-ink{background:var(--ink);color:var(--black);border-color:var(--ink)}.b-ink:hover{background:var(--bg);color:var(--ink)}
+.b-black{background:var(--black);color:var(--hot);border-color:var(--black)}.b-black:hover{background:var(--ink);color:var(--black);border-color:var(--ink)}
+.b-oink{color:var(--ink);border-color:var(--ink)}.b-oink:hover{background:var(--ink);color:var(--black)}
+.b-oblack{color:var(--black);border-color:var(--black)}.b-oblack:hover{background:var(--black);color:var(--hot)}
+.b-sm{font-size:13px;padding:12px 16px}
+
+/* ---------- hero ---------- */
+.hero{background:var(--hot);color:var(--black);border-bottom:2px solid var(--ink);position:relative;overflow:hidden}
+.hero .in{padding:56px 32px 48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:40px;align-items:end}
+.kick{font-family:var(--mono);font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.kick .badge{background:var(--black);color:var(--hot);padding:4px 8px}
+.hero h1{font-family:var(--display);font-size:clamp(48px,6.9vw,104px);line-height:.9;letter-spacing:-.03em;margin:26px 0 0;text-transform:uppercase}
+.hero h1 .out{-webkit-text-stroke:2px var(--black);color:transparent}
+.hero p{font-size:19px;font-weight:500;margin:26px 0 0;max-width:54ch;line-height:1.4;text-wrap:pretty}
+.hero .cta{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
+.ocard{position:relative;background:var(--bg);color:var(--ink);border:2px solid var(--black);padding:24px;overflow:hidden;box-shadow:12px 12px 0 var(--black)}
+.ocard .row{position:relative;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:12px;letter-spacing:.1em;gap:10px;flex-wrap:wrap}
+.ocard .pool{position:relative;display:flex;align-items:center;gap:18px;margin-top:22px}
+.ocard .pool img{width:84px;height:84px}
+.ocard .big{font-family:var(--display);font-size:44px;line-height:1;margin-top:4px;letter-spacing:-.02em}
+.ocard .sub{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:4px}
+.ocard .two{position:relative;margin-top:22px;border-top:2px solid var(--line);padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:14px;font-family:var(--mono)}
+.ocard .two .v{font-size:20px;font-weight:600;margin-top:2px}
+.ocard .acts{position:relative;display:flex;gap:8px;margin-top:20px}
+.ocard .acts .b{flex:1;padding:12px;font-size:13px}
+
+/* ---------- ticker ---------- */
+.ticker{border-bottom:2px solid var(--ink);background:var(--bg);overflow:hidden}
+.ticker .row{display:flex;align-items:center;height:48px;font-family:var(--mono);font-size:14px;white-space:nowrap}
+.ticker .lbl{padding:0 20px;background:var(--ink);color:var(--black);font-weight:600;letter-spacing:.12em;height:100%;display:flex;align-items:center;position:relative;z-index:2}
+.ticker .track{flex:1;overflow:hidden}
+.ticker .run{display:inline-flex;white-space:nowrap;animation:marquee 34s linear infinite}
+.ticker .run span{padding:0 32px;font-weight:500;color:var(--dim)}
+.ticker .run span:nth-child(odd){color:var(--hot)}
+
+/* ---------- stats ---------- */
+.stats{border-bottom:2px solid var(--ink);overflow:hidden}
+.stats .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.stats .c{padding:28px 32px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);margin-bottom:-2px}
+.stats .c.hot{background:var(--hot);color:var(--black)}
+.stats .c.hot .k,.stats .c.hot .s{color:var(--black);font-weight:600}
+.stats .k{font-size:11px}
+.stats .v{font-family:var(--display);font-size:40px;letter-spacing:-.02em;margin-top:6px}
+.stats .s{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.stats.small .c{padding:18px 32px}.stats.small .v{font-size:28px;margin-top:4px}.stats.small .k{font-size:10px}
+
+/* ---------- sections ---------- */
+.sec{padding:56px 32px 0}
+.sec-head{display:flex;align-items:flex-end;gap:24px;margin-bottom:24px;flex-wrap:wrap}
+.sec-head h2{font-family:var(--display);font-size:48px;letter-spacing:-.03em;margin:0;text-transform:uppercase;line-height:1}
+.filters{display:flex;font-family:var(--mono);font-size:12px;letter-spacing:.06em;border:2px solid var(--ink);overflow-x:auto;scrollbar-width:none}
+.filters::-webkit-scrollbar,.dnav::-webkit-scrollbar{display:none}
+.filters button{border:0;border-right:2px solid var(--ink);background:transparent;color:var(--dim);padding:8px 14px;text-transform:uppercase;white-space:nowrap;font-family:inherit;font-size:inherit;letter-spacing:inherit}
+.filters button:last-child{border-right:0}
+.filters button:hover{color:var(--hot)}
+.filters button.on{background:var(--ink);color:var(--black)}
+.linkline{font-family:var(--mono);font-size:12px;letter-spacing:.08em;border-bottom:2px solid var(--hot);text-transform:uppercase}
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.card{background:var(--bg);color:var(--ink);border:2px solid var(--ink);padding:20px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;text-align:left;font-family:inherit;display:block;width:100%}
+.card:hover{transform:translate(-4px,-4px);box-shadow:6px 6px 0 var(--hot)}
+.card.official{background:var(--hot);color:var(--black);border-color:var(--hot)}
+.card.official:hover{box-shadow:6px 6px 0 var(--black)}
+/* translucent black on orange is unreadable; on the official card everything is solid */
+.card.official .sy,.card.official .pool small,.card.official .kv .k{opacity:1}
+.card.official .kv .k,.card.official .pool small{font-weight:600}
+.card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.card .id{display:flex;align-items:center;gap:12px;min-width:0}
+.ini{width:44px;height:44px;border:2px solid currentColor;display:grid;place-items:center;font-family:var(--display);font-size:15px;flex:none;overflow:hidden;background:transparent}
+.ini img{width:100%;height:100%;object-fit:cover}
+.card .nm{font-family:var(--display);font-size:20px;line-height:1.1}
+.card .sy{font-family:var(--mono);font-size:12px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:4px 7px;border:2px solid;transform:rotate(-4deg);white-space:nowrap;flex:none}
+.tag.curve{color:var(--dim);border-color:var(--dim)}.tag.grad{color:var(--ok);border-color:var(--ok)}.tag.official{color:var(--black);border-color:var(--black)}
+.card .pool{margin-top:20px;font-family:var(--display);font-size:36px;letter-spacing:-.02em;line-height:1}
+.card .pool small{font-family:var(--mono);font-size:12px;letter-spacing:.1em;margin-left:8px;opacity:.7;font-weight:400}
+.bar{height:10px;border:2px solid currentColor;margin:16px 0 14px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;background:var(--hot)}
+.card.official .bar i{background:var(--black)}
+.card .kv{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-family:var(--mono);font-size:12px}
+.card .kv .k{font-size:10px;letter-spacing:.1em;opacity:.7;color:inherit}
+.card .kv .v{font-weight:600}
+.empty{text-align:center;padding:64px 0;color:var(--dim);font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+
+.steps{padding:96px 32px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:48px;align-items:start}
+.steps h2{font-family:var(--display);font-size:56px;letter-spacing:-.03em;line-height:.95;margin:14px 0 0;text-transform:uppercase}
+.steps h2 span{color:var(--hot)}
+.steps p.lead{color:var(--dim);font-size:16px;margin:22px 0 0;max-width:40ch}
+.kick2{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--hot);text-transform:uppercase}
+.steplist{display:flex;flex-direction:column;border:2px solid var(--ink)}
+.step{display:grid;grid-template-columns:90px minmax(0,1fr);border-bottom:2px solid var(--ink)}
+.step:last-child{border-bottom:0}
+.step .n{font-family:var(--display);font-size:40px;padding:22px 20px;border-right:2px solid var(--ink);display:grid;place-items:center}
+.step .bd{padding:22px 24px}
+.step .t{font-family:var(--display);font-size:20px}
+.step p{color:var(--dim);margin:6px 0 0;font-size:14px}
+.step.hot{background:var(--hot);color:var(--black)}
+.step.hot .n{border-color:var(--black)}
+.step.hot p{color:var(--black);font-weight:500}
+.feebar{display:flex;height:12px;margin-top:14px;border:2px solid var(--ink)}
+.feebar i{display:block}
+.feebar .a{width:85%;background:var(--hot)}.feebar .b2{width:10%;background:var(--ink)}.feebar .c{width:5%;background:var(--dim)}
+.feeleg{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-top:6px;color:var(--dim)}
+.feeleg b{color:var(--hot)}.feeleg b.w{color:var(--ink)}
+
+.rules-head{display:flex;align-items:baseline;gap:18px;margin-bottom:24px;flex-wrap:wrap}
+.rules-head h2{font-family:var(--display);font-size:40px;letter-spacing:-.03em;margin:0;text-transform:uppercase;line-height:1}
+.rules-head span{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.06em}
+.rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--ink);border-left:2px solid var(--ink)}
+.rule{padding:22px 24px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.rule .n{font-family:var(--display);font-size:28px;color:var(--hot);line-height:1}
+.rule .t{font-family:var(--display);margin-top:10px;font-size:16px;line-height:1.25}
+.rule p{color:var(--dim);font-size:14px;margin:8px 0 0;text-wrap:pretty}
+
+.ctabox{margin:64px 32px 96px;border:2px solid var(--ink);padding:28px 32px;display:flex;align-items:center;gap:28px;box-shadow:10px 10px 0 var(--hot);flex-wrap:wrap}
+.ctabox .t{font-family:var(--display);font-size:24px;line-height:1.1}
+.ctabox .s{color:var(--dim);font-size:15px;margin-top:6px}
+.ctabox>div{flex:1;min-width:260px}
+
+/* ---------- token page ---------- */
+.thead{border-bottom:2px solid var(--ink)}
+.thead.official{background:var(--hot);color:var(--black)}
+.thead .in{padding:22px 32px 26px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.chip{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:inherit;border:2px solid currentColor;padding:6px 10px;white-space:nowrap;background:transparent}
+.chip:hover{background:var(--black);color:var(--hot);border-color:var(--black)}
+.thead .ini{width:64px;height:64px;font-size:22px}
+.tinfo{flex:1;min-width:0}
+.thead .ttl{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.thead .nm{font-family:var(--display);font-size:clamp(28px,3.5vw,40px);letter-spacing:-.02em;line-height:1}
+.thead .sy{font-family:var(--mono);font-size:16px;opacity:.75}
+.thead .tag{transform:none;white-space:normal;text-align:center}
+.thead .desc{font-size:15px;margin-top:6px;opacity:.85}
+.thead.official .sy,.thead.official .desc{opacity:1}
+.thead.official .sy{font-weight:500}
+.thead .desc a{font-family:var(--mono);font-size:13px;color:inherit;text-decoration:underline}
+.tbody{padding:28px 32px 96px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:24px;align-items:start}
+.tcol{display:flex;flex-direction:column;gap:24px;min-width:0}
+.meterbox{display:grid;grid-template-columns:200px minmax(0,1fr);border:2px solid var(--ink)}
+.meter{border-right:2px solid var(--ink);padding:22px;display:flex;flex-direction:column;align-items:center}
+.meter .k{align-self:flex-start}
+.tube{position:relative;width:110px;flex:1;min-height:250px;border:2px solid var(--ink);margin-top:16px;overflow:hidden;background:var(--well)}
+.tube .fill{position:absolute;left:0;right:0;bottom:0;background:var(--hot);transition:height .6s}
+.tube .wave{position:absolute;top:-8px;left:0;right:-24px;height:16px;background:radial-gradient(circle at 12px 8px,var(--hot) 8px,transparent 9px) 0 0/24px 16px;animation:liquid 1.6s ease-in-out infinite}
+.tube .lbl{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:26px;mix-blend-mode:difference;color:var(--ink)}
+.meter .under{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:12px;text-align:center}
+.cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));grid-auto-rows:1fr;min-width:0;gap:2px;background:var(--ink)}
+.cell{padding:22px 24px;background:var(--bg)}
+.cell.hot{background:var(--hot);color:var(--black)}
+.cell.hot .k,.cell.hot .s{color:var(--black);font-weight:600}
+.cell .v{font-family:var(--display);font-size:clamp(24px,2.6vw,34px);letter-spacing:-.02em;margin-top:6px;line-height:1;word-break:break-word}
+.cell .s{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:4px}
+.dl{border:2px solid var(--ink);background:var(--ink);color:var(--black);padding:16px 20px;display:flex;gap:16px;align-items:flex-start}
+.dl .chipb{font-family:var(--display);font-size:14px;text-transform:uppercase;background:var(--black);color:var(--ink);padding:4px 8px;white-space:nowrap}
+.dl div{font-size:15px;font-weight:500}
+.box{border:2px solid var(--ink)}
+.box .bh{padding:14px 20px;border-bottom:2px solid var(--ink);font-family:var(--display);font-size:16px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.box .bh span{font-family:var(--mono);font-size:11px;color:var(--dim);font-weight:400;letter-spacing:.1em}
+.ledger{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;background:var(--ink)}
+.ledger>div{padding:16px 20px;min-width:0;background:var(--bg)}
+.ledger .k{font-size:10px;letter-spacing:.12em}
+.ledger .v{font-family:var(--mono);font-size:15px;font-weight:600;margin-top:4px;word-break:break-word}
+.ledger .v.hot{color:var(--hot)}
+.act{display:grid;grid-template-columns:70px minmax(0,1fr) auto 60px;gap:14px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:13px}
+.act:last-child{border-bottom:0}
+.act .kd{font-size:11px;letter-spacing:.12em;font-weight:600}
+.act .who{color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act .amt{font-weight:600;white-space:nowrap}
+.act .wh{color:var(--mute);font-size:12px;text-align:right}
+.aside{position:sticky;top:92px;display:flex;flex-direction:column;gap:16px}
+.trade{border:2px solid var(--ink);box-shadow:8px 8px 0 var(--hot);background:var(--bg)}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:2px solid var(--ink)}
+.tabs button{padding:14px;border:0;border-right:2px solid var(--ink);background:var(--bg);color:var(--dim);font-family:var(--display);font-size:14px;text-transform:uppercase}
+.tabs button:last-child{border-right:0}
+.tabs button.on{background:var(--hot);color:var(--black)}
+.pane{padding:20px;background:var(--bg)}
+.lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.lbl button{font-family:var(--mono);font-size:11px;background:transparent;border:0;color:var(--hot);padding:0;letter-spacing:.06em}
+.inrow{display:flex;align-items:center;border:2px solid var(--ink);padding:0 14px}
+.inrow.hot{border-color:var(--hot)}
+.inrow input{flex:1;background:transparent;border:0;color:var(--ink);padding:14px 0;font-size:26px;font-family:var(--display);min-width:0;width:100%}
+.inrow span{font-family:var(--mono);color:var(--dim);font-size:13px;white-space:nowrap}
+.qrow{font-family:var(--mono);font-size:12px;color:var(--dim);display:flex;justify-content:space-between;gap:10px;margin-top:6px}
+.qrow b{color:var(--ink);font-weight:600;text-align:right}
+.qrow.warn{color:var(--hot)}.qrow.warn b{color:var(--hot)}
+.qbox{margin-top:14px;border:2px solid var(--ink);font-family:var(--mono)}
+.qbox .top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:2px solid var(--ink);background:var(--hot);color:var(--black);gap:10px}
+.qbox .top span{font-size:11px;letter-spacing:.12em;font-weight:600}
+.qbox .top b{font-family:var(--display);font-size:22px;font-weight:400;text-align:right}
+.qbox .mid{display:flex;justify-content:space-between;padding:10px 14px;font-size:12px;color:var(--dim);gap:10px}
+.qbox .mid b{color:var(--ink);font-weight:600}
+.qbox .hint{font-size:11px;color:var(--dim);padding:0 14px 12px}
+.qbox .hint.ok{color:var(--ok)}
+.hold{position:relative;margin-top:16px;height:64px;border:2px solid var(--hot);overflow:hidden;cursor:pointer;user-select:none;touch-action:none;background:var(--bg);width:100%;padding:0;font-family:inherit}
+.hold .fill{position:absolute;inset:0;width:0;background:var(--hot);transition:width .05s linear}
+.hold .lab{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:12px;font-family:var(--display);font-size:17px;text-transform:uppercase;color:var(--hot)}
+.hold .lab img{width:22px;height:22px}
+.hold.far .lab{color:var(--black)}
+.fine{font-family:var(--mono);font-size:11px;color:var(--mute);text-align:center;margin-top:8px;letter-spacing:.04em}
+.burning{position:relative;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+.burning img{width:96px;height:96px;position:relative}
+.burning .k{position:relative;margin-top:16px}
+.burning .tk{position:relative;font-family:var(--display);font-size:30px;color:var(--hot)}
+.burning .tk small{font-size:14px}
+.burning .us{position:relative;font-family:var(--display);font-size:38px}
+.burning .us small{font-size:14px;color:var(--dim);font-family:var(--display)}
+.done{text-align:center;padding:12px 0 4px}
+.done .ok{font-family:var(--display);font-size:13px;letter-spacing:.14em;color:var(--ok);text-transform:uppercase}
+.done .big{font-family:var(--display);font-size:44px;letter-spacing:-.02em;margin-top:8px;line-height:1}
+.done .s{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:6px}
+.done .n{font-size:12px;color:var(--mute);margin-top:12px}
+.pos{border:2px solid var(--ink);padding:18px 20px}
+.pos .t{font-family:var(--display);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+.pos .g{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px;font-family:var(--mono)}
+.pos .g .k{font-size:10px;letter-spacing:.1em}
+.pos .g .v{font-size:15px;font-weight:600;margin-top:2px;word-break:break-word}
+.pos .g .v.hot{color:var(--hot)}
+.pos p{color:var(--dim);font-size:14px;margin:8px 0 0}
+.claim{margin-top:14px;padding-top:14px;border-top:2px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--mono);font-size:12px}
+.status{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:12px;white-space:pre-line;letter-spacing:.02em;line-height:1.6}
+.status.err{color:var(--bad)}.status.ok{color:var(--ok)}
+.gradnote{font-size:14px;color:var(--dim);margin:0 0 14px}
+.chooser{position:fixed;inset:0;z-index:40;background:rgba(21,21,20,.82);display:flex;align-items:center;justify-content:center;padding:16px}
+.cbox{width:100%;max-width:440px;background:var(--bg);border:2px solid var(--ink);box-shadow:10px 10px 0 var(--hot);animation:rise .25s ease-out both}
+.cbox .ch{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:2px solid var(--ink);font-family:var(--display);font-size:16px;text-transform:uppercase}
+.cbox .cx{background:transparent;border:0;color:var(--dim);font-size:24px;line-height:1;padding:0 4px}
+.cbox .cx:hover{color:var(--hot)}
+.copt{display:block;width:100%;text-align:left;background:transparent;color:var(--ink);border:0;border-bottom:2px solid var(--ink);padding:16px 18px;font-family:inherit}
+.copt b{display:block;font-family:var(--display);font-size:15px;text-transform:uppercase;letter-spacing:.02em}
+.copt span{display:block;font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:4px}
+.copt:hover:not(:disabled){background:var(--hot);color:var(--black)}
+.copt:hover:not(:disabled) span{color:var(--black)}
+.cbox .status{margin:0;padding:12px 18px}
+
+/* ---------- launch ---------- */
+.phead{border-bottom:2px solid var(--ink);background:var(--hot);color:var(--black)}
+.phead .in{padding:44px 32px 40px}
+.phead .kick{display:block}
+.phead h1{font-family:var(--display);font-size:clamp(40px,5.5vw,72px);line-height:.92;letter-spacing:-.03em;margin:14px 0 0;text-transform:uppercase}
+.phead p{font-size:18px;font-weight:500;margin:20px 0 0;max-width:60ch}
+.phead.dark{background:var(--bg);color:var(--ink)}
+.phead .in.row{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.phead .in.row>div{flex:1;min-width:260px}
+.lbody{padding:32px 32px 96px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:24px;align-items:start}
+.form{border:2px solid var(--ink)}
+.form .r2{display:grid;grid-template-columns:minmax(0,1fr) 200px;border-bottom:2px solid var(--ink)}
+.form .r2b{display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid var(--ink)}
+.form label{display:block;padding:18px 22px;min-width:0}
+.form .r2 label:first-child,.form .r2b label:first-child{border-right:2px solid var(--ink)}
+.form label.full{border-bottom:2px solid var(--ink)}
+.form label span{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim)}
+.form input,.form textarea{display:block;width:100%;margin-top:6px;background:transparent;border:0;border-bottom:2px solid var(--line);color:var(--ink);padding:8px 0;font-size:28px;font-family:var(--display)}
+.form input.sym{color:var(--hot);text-transform:uppercase}
+.form textarea{font-size:17px;font-family:inherit;resize:vertical}
+.form input.mono{font-size:15px;font-family:var(--mono)}
+.form .dev{padding:18px 22px 22px}
+.form .dev .inrow{padding:0 16px;margin-top:8px}
+.form .dev input{font-size:34px;border:0;margin:0}
+.form .dev .lbl b{color:var(--ok);font-weight:400;letter-spacing:.06em;font-family:var(--mono);font-size:11px}
+.lside{display:flex;flex-direction:column;gap:16px;position:sticky;top:92px}
+.preview{border:2px solid var(--ink);padding:20px;position:relative;overflow:hidden}
+.preview .pool{margin-top:18px;font-family:var(--display);font-size:32px;letter-spacing:-.02em;line-height:1}
+.preview .pool small{font-family:var(--mono);font-size:11px;letter-spacing:.1em;margin-left:8px;color:var(--dim);font-weight:400}
+.terms .th{padding:12px 20px;border-bottom:2px solid var(--ink)}
+.terms .fb{padding:16px 20px;border-bottom:2px solid var(--ink)}
+.terms .fb .feebar{margin-top:0}
+.terms .tg{display:grid;grid-template-columns:1fr 1fr;font-family:var(--mono);font-size:13px}
+.terms .tg>div{padding:12px 20px;border-bottom:2px solid var(--ink)}
+.terms .tg>div:nth-child(odd){border-right:2px solid var(--ink)}
+.terms .tg>div:nth-last-child(-n+2){border-bottom:0}
+.terms .tg .k{font-size:10px;letter-spacing:.1em}
+.terms .tg b{font-weight:600}
+.total{border:2px solid var(--ink);padding:20px;box-shadow:8px 8px 0 var(--hot)}
+.total .r{display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;margin-top:6px}
+.total .r span:first-child{color:var(--dim)}
+.total .r:first-child{margin-top:0}
+.total .sum{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;border-top:2px solid var(--ink)}
+.total .sum b{font-family:var(--display);font-size:26px;font-weight:400}
+.total .b{width:100%;margin-top:16px;padding:18px;font-size:18px}
+.total .b img{width:22px;height:22px}
+.launched{position:relative;border:2px solid var(--ink);padding:56px;text-align:center;overflow:hidden;box-shadow:12px 12px 0 var(--hot);margin:32px 32px 96px}
+.launched img.big{width:110px;height:110px;margin:0 auto;position:relative}
+.launched .k{position:relative;font-size:12px;letter-spacing:.16em;color:var(--hot);margin-top:20px}
+.launched h2{position:relative;font-family:var(--display);font-size:clamp(40px,5vw,64px);letter-spacing:-.03em;margin:10px 0 0;line-height:1;text-transform:uppercase}
+.launched .sy{position:relative;font-family:var(--mono);font-size:18px;color:var(--dim);margin-top:6px}
+.launched p{position:relative;color:var(--dim);margin:14px auto 0;max-width:54ch;font-size:16px}
+.launched .cta{position:relative;display:flex;gap:10px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+
+/* ---------- launches list ---------- */
+.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:10px;border:2px solid var(--ink);padding:0 14px;min-width:min(100%,320px);flex:1;max-width:400px}
+.search span{color:var(--dim);font-family:var(--mono)}
+.search input{flex:1;background:transparent;border:0;color:var(--ink);padding:11px 0;font-size:13px;font-family:var(--mono);letter-spacing:.04em;min-width:0;text-transform:uppercase}
+.sorts{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--dim);white-space:nowrap}
+.sorts button{border:0;background:transparent;color:var(--dim);font-family:inherit;font-size:12px;letter-spacing:.06em;padding:4px 8px;border-bottom:2px solid transparent;text-transform:uppercase}
+.sorts button:hover{color:var(--ink)}
+.sorts button.on{color:var(--hot);border-bottom-color:var(--hot)}
+
+/* ---------- docs ---------- */
+.dbody{padding:32px 32px 96px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:40px;align-items:start}
+.dnav{position:sticky;top:96px;border:2px solid var(--ink);font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;display:flex;flex-direction:column}
+.dnav a{color:var(--ink);padding:10px 14px;border-bottom:2px solid var(--ink)}
+.dnav a:last-child{border-bottom:0}
+.dnav a:hover{color:var(--hot)}
+.dnav a.on{background:var(--ink);color:var(--black)}
+.article{display:flex;flex-direction:column;gap:56px;min-width:0;max-width:800px}
+.article section{scroll-margin-top:100px}
+.article h2{font-family:var(--display);font-size:28px;letter-spacing:-.02em;margin:10px 0 0;line-height:1.15}
+.article h2.big{font-size:32px;line-height:1.1}
+.article p{color:var(--dim);font-size:15px;margin:16px 0 0}
+.article p+p{margin-top:12px}
+.article p b{color:var(--ink)}
+.article code{font-family:var(--mono);font-size:12px;color:var(--hot)}
+.article .m{font-family:var(--mono);color:var(--ink)}
+.lines{margin-top:20px;border:2px solid var(--ink);font-family:var(--mono);font-size:14px;line-height:1.9}
+.lines>div{padding:12px 18px;border-bottom:2px solid var(--ink)}
+.lines>div:last-child{border-bottom:0}
+.lines b{color:var(--hot)}
+.ftable{margin-top:18px;border:2px solid var(--ink);font-family:var(--mono);font-size:13px}
+.ftable>div{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;padding:12px 16px;border-top:2px solid var(--ink)}
+.ftable>div:first-child{background:var(--ink);color:var(--black);padding:10px 16px;font-size:10px;letter-spacing:.12em;font-weight:600;border-top:0}
+.ftable .h{color:var(--hot);font-weight:600}
+.formula{margin-top:16px;border:2px solid var(--hot);padding:16px 18px;font-family:var(--display);font-size:20px;color:var(--hot)}
+.tiles{margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border-top:2px solid var(--ink);border-left:2px solid var(--ink)}
+.tiles>div{padding:16px 18px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.tiles .t{font-family:var(--display);margin-top:6px}
+.tiles p{font-size:13.5px;margin:6px 0 0}
+.tiles>div.hot{background:var(--hot);color:var(--black)}
+.tiles>div.hot .k,.tiles>div.hot p{color:var(--black);font-weight:500}
+.tiles.params{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));font-family:var(--mono)}
+.tiles.params>div{padding:14px 16px}
+.tiles.params .v{font-size:16px;font-weight:600;margin-top:4px}
+.tiles.wide{grid-template-columns:repeat(auto-fit,minmax(240px,1fr));font-size:14px}
+.tiles.wide div div:last-child{margin-top:6px}
+.clist{margin-top:18px;border:2px solid var(--ink);font-size:14px}
+.clist>div{display:grid;grid-template-columns:180px minmax(0,1fr);gap:16px;padding:12px 16px;border-bottom:2px solid var(--ink)}
+.clist>div:last-child{border-bottom:0}
+.clist .n{font-family:var(--mono);font-size:13px;color:var(--hot);font-weight:600;word-break:break-all}
+.clist .n a{display:block;font-size:11px;color:var(--dim);font-weight:400;margin-top:4px}
+.clist .n a:hover{color:var(--hot)}
+.clist span:last-child{color:var(--dim)}
+.clist.api>div{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+.clist.api code{font-size:12px;color:var(--ink);word-break:break-all}
+.dlist{margin-top:18px;border:2px solid var(--ink)}
+.dlist>div{padding:14px 18px;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;border-bottom:2px solid var(--ink)}
+.dlist>div:last-child{border-bottom:0}
+.dlist .n{font-family:var(--display);font-size:18px;color:var(--hot);line-height:1.2}
+.dlist .t{font-family:var(--display);font-size:15px}
+.dlist p{font-size:13.5px;margin:4px 0 0}
+
+/* ---------- footer ---------- */
+.ftr{border-top:2px solid var(--ink);margin-top:auto}
+.ftr .in{padding:22px 32px;display:flex;gap:24px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.ftr .brand2{display:flex;align-items:center;gap:8px;color:var(--ink)}
+.ftr .brand2 img{width:18px;height:18px}
+.ftr a{color:var(--dim)}.ftr a:hover{color:var(--hot)}
+.ftr .sp{flex:1}
+.ftr .mute{color:var(--mute)}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .aside,.lside,.dnav{position:static}
+  .rules{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dbody{grid-template-columns:1fr;gap:24px}
+  .dnav{flex-direction:row;overflow-x:auto;scrollbar-width:none}
+  .dnav a{border-bottom:0;border-right:2px solid var(--ink);white-space:nowrap}
+  .dnav a:last-child{border-right:0}
+}
+@media (max-width:640px){
+  .in,.sec,.steps,.tbody,.lbody,.dbody,.hdr .in,.hero .in,.thead .in,.phead .in,.ftr .in,.strip .in{padding-left:16px;padding-right:16px}
+  .ctabox{margin-left:16px;margin-right:16px;padding:22px 20px}
+  .launched{margin-left:16px;margin-right:16px;padding:36px 20px}
+  .brand{padding-right:16px}
+  .brand span{display:none}
+  .nav a{padding:0 14px}
+  .hdr .right{width:100%;min-height:54px;border-top:2px solid var(--line);gap:8px;padding:8px 0}
+  .net span{display:none}
+  .net{margin-right:0}
+  .btn-line,.btn-wallet{flex:1;text-align:center;margin:0;padding:9px 6px;white-space:nowrap}
+  .hero h1{font-size:min(11.2vw,48px)}
+  .hero .cta .b{width:100%}
+  .hero .in{padding-top:36px;padding-bottom:36px}
+  .ocard{box-shadow:8px 8px 0 var(--black)}
+  .ocard .big{font-size:38px}
+  .step{grid-template-columns:64px minmax(0,1fr)}
+  .step .n{font-size:30px;padding:18px 12px}
+  .step .bd{padding:18px 16px}
+  .steps{padding-top:64px}
+  .phead h1{font-size:min(10.5vw,44px)}
+  .phead p{font-size:16px}
+  .sec{padding-top:40px}
+  .ftable>div{font-size:11px}
+  .net{margin-right:0}
+  .btn-line{margin-right:8px;padding:8px 10px}
+  .stats .g,.stats.small .g{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .stats .c{padding:18px 16px}
+  .stats .v{font-size:28px}
+  .stats.small .v{font-size:22px}
+  .stats .c:nth-child(2n){border-right:0}
+  .hero .cta .b{font-size:15px}
+  .article h2{font-size:24px}
+  .article h2.big{font-size:26px}
+  .kick{font-size:12px}
+  .sec-head h2{font-size:38px}
+  .steps h2{font-size:44px}
+  .rules{grid-template-columns:1fr}
+  .rules-head h2{font-size:30px}
+  .tinfo{flex:1 1 100%;order:3}
+  .taddr{order:2;margin-left:auto}
+  .meterbox{grid-template-columns:1fr}
+  .meter{border-right:0;border-bottom:2px solid var(--ink)}
+  .tube{min-height:160px}
+  .ledger{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .act{grid-template-columns:60px minmax(0,1fr) 50px;gap:10px}
+  .act .amt{grid-column:2;font-size:12px}
+  .form .r2,.form .r2b{grid-template-columns:1fr}
+  .form .r2 label:first-child,.form .r2b label:first-child{border-right:0;border-bottom:2px solid var(--ink)}
+  .form input{font-size:22px}
+  .ftable>div{grid-template-columns:1.4fr 1fr 1fr 1fr;padding:10px 12px;font-size:12px}
+  .clist>div,.clist.api>div{grid-template-columns:1fr}
+  .dlist>div{grid-template-columns:36px minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hdr">
+    <div class="in">
+      <a class="brand" href="#/"><img src="/logo-256.png" alt="AshonArc"><span>ASHONARC</span></a>
+      <nav class="nav">
+        <a href="#/launches" data-nav="launches">Launches</a>
+        <a href="#/launch" data-nav="launch">Launch</a>
+        <a href="#/docs" data-nav="docs">Docs</a>
+      </nav>
+      <span class="sp"></span>
+      <div class="right">
+        <span class="net"><i id="netdot"></i><span id="net">…</span></span>
+        <a class="btn-line" id="bridge" href="https://cctpbridge.app/" target="_blank" rel="noopener">Get USDC ↗</a>
+        <button class="btn-wallet" id="connect">Connect wallet</button>
+      </div>
+    </div>
+  </header>
+  <div class="strip" id="rehearsal" hidden><div class="in"><b>■ REHEARSAL ENVIRONMENT</b><span>These are test launches, not the real $ASH. Nothing here has value.</span></div></div>
+  <div class="strip" id="prelaunch" hidden><div class="in"><b>■ $ASH NOT LAUNCHED YET</b><span>Launches open the moment it is. Contract address and time are posted on <a href="https://x.com/AshonArc" target="_blank" rel="noopener">@AshonArc</a> first — anything elsewhere is fake.</span></div></div>
+  <div class="strip" id="nofunds" hidden><div class="in"><b>■ NO USDC ON ARC</b><span>Arc uses USDC as gas. Bridge some in with <a id="bridge2" href="https://cctpbridge.app/" target="_blank" rel="noopener">CCTP</a> (domain 26); it lands as native USDC in about a minute.</span></div></div>
+
+  <main id="view" class="view"></main>
+
+  <footer class="ftr">
+    <div class="in">
+      <span class="brand2"><img src="/logo-256.png" alt="">AshonArc · <span id="foot-net">Arc</span></span>
+      <a href="/api/health" target="_blank" rel="noopener">status</a>
+      <a href="/api/tokens" target="_blank" rel="noopener">api</a>
+      <a href="#/docs#d-contracts">contracts</a>
+      <a href="https://x.com/AshonArc" target="_blank" rel="noopener">@AshonArc</a>
+      <a id="foot-explorer" href="#" target="_blank" rel="noopener">explorer</a>
+      <span class="sp"></span>
+      <span class="mute">Experimental · no audit · not advice</span>
+    </div>
+  </footer>
+</div>
+
+<template id="tpl-docs">
+<div class="phead"><div class="in">
+  <span class="kick">Docs · how the machine works</span>
+  <h1>Fees fill the pool.<br>Burning drains your share.</h1>
+  <p>Open to everyone, identical for every token, unchangeable by the issuer or by us. The official token runs on the same contracts; other tokens just send 5% of their fees to its pool.</p>
+</div></div>
+<div class="in dbody">
+  <nav class="dnav">
+    <a href="#/docs#d-rule">01 The rule</a><a href="#/docs#d-fees">02 Fee routing</a><a href="#/docs#d-redeem">03 Burn to redeem</a><a href="#/docs#d-window">04 30-day window</a><a href="#/docs#d-curve">05 Curve &amp; graduation</a><a href="#/docs#d-snipe">06 Snipe tax</a><a href="#/docs#d-arc">07 Arc specifics</a><a href="#/docs#d-contracts">08 Contracts</a><a href="#/docs#d-api">09 API &amp; keeper</a><a href="#/docs#d-security">10 Security</a><a href="#/docs#d-disclosures">11 Disclosures</a>
+  </nav>
+  <article class="article">
+    <section id="d-rule">
+      <div class="kick2">01 · The rule</div>
+      <h2 class="big">Every token routes its trading fees into its own redemption pool. Burn the token, take your share in USDC.</h2>
+      <div class="lines">
+        <div>trade → 3% fee → <b>85%</b> pool · 10% issuer · 5% official pool</div>
+        <div>burn q tokens → receive <b>q ÷ supply × pool</b> USDC</div>
+        <div>window: <b>30 days</b> from launch → then the residual goes to the issuer, once</div>
+      </div>
+    </section>
+    <section id="d-fees">
+      <div class="kick2">02 · Fee routing</div>
+      <h2>Where the 3% goes</h2>
+      <div class="ftable">
+        <div><span></span><span>ITS OWN POOL</span><span>ISSUER</span><span>OFFICIAL POOL</span></div>
+        <div><span>Any token</span><span class="h">85%</span><span>10%</span><span>5%</span></div>
+        <div><span>Official token</span><span class="h">90%</span><span>10%</span><span style="color:var(--mute)">—</span></div>
+      </div>
+      <p>On the curve the split happens inside the trade — no keeper needed. After graduation the Uniswap V4 position's 1% LP fee is pulled in by a permissionless <code>collectFees()</code> call and split the same way. The issuer's 10% is <b>pulled</b> via <code>claim()</code>, never pushed — Arc reverts transfers to blocklisted addresses, and a push would let one bad address jam everyone's trades.</p>
+      <p>The 5% route goes to the official pool while that pool is open, and to the platform sink after it closes. After any token's own deadline, the pool share of new fees goes to its issuer's claimable balance instead of the pool.</p>
+    </section>
+    <section id="d-redeem">
+      <div class="kick2">03 · Burn to redeem</div>
+      <h2>Pro-rata, and it leaves everyone else's floor untouched</h2>
+      <p>Burning <span class="m">q</span> tokens out of supply <span class="m">S</span> against pool <span class="m">R</span> pays <span class="m">q·R/S</span>. Tokens are destroyed and USDC arrives in the same transaction. Rounding always favours the pool.</p>
+      <div class="formula">(R − qR/S) ÷ (S − q) = R/S</div>
+      <p>A burn does not raise anyone's floor. Don't call it deflation and don't say "burning pumps the price" — it is an exit right with an on-chain verifiable floor. Selling usually pays more; the token page shows both quotes side by side.</p>
+      <p><b>Supply</b> means the ERC-20 total supply. Tokens locked in the graduated Uniswap position are part of it and can never be redeemed; the locked share is shown on every graduated token.</p>
+    </section>
+    <section id="d-window">
+      <div class="kick2">04 · The 30-day window</div>
+      <h2>Redemption closes at a fixed deadline</h2>
+      <div class="tiles">
+        <div><div class="k">T+0 → T+30D</div><div class="t">Redemption open</div><p>Anyone can burn for USDC at any time. The issuer cannot touch the pool.</p></div>
+        <div><div class="k">T+30D</div><div class="t">Deadline</div><p>Exact timestamp printed on the token page at the same size as the pool value. The two windows are mutually exclusive.</p></div>
+        <div class="hot"><div class="k">After</div><div class="t">Residual → issuer, once</div><p>Whatever is left is withdrawn by the issuer in a single flag-guarded call. Holding past the deadline pays nothing.</p></div>
+      </div>
+    </section>
+    <section id="d-curve">
+      <div class="kick2">05 · Curve &amp; graduation</div>
+      <h2>Fixed parameters for every launch</h2>
+      <div class="tiles params">
+        <div><div class="k">Launch fee</div><div class="v" data-fill="fee"></div></div>
+        <div><div class="k">Supply</div><div class="v">1,000,000,000</div></div>
+        <div><div class="k">Trade fee</div><div class="v">3%</div></div>
+        <div><div class="k">Graduates at</div><div class="v" data-fill="grad"></div></div>
+        <div><div class="k">Post-grad venue</div><div class="v">UNISWAP V4</div></div>
+        <div><div class="k">LP fee → pool</div><div class="v">1%</div></div>
+      </div>
+      <p>Buying and selling happen on a bonding curve until the real USDC reserve reaches the threshold. At graduation the reserve and matching tokens move into a Uniswap V4 pool whose position the contract holds forever; the unsold remainder is burned. From then on trading happens on Uniswap and the position's LP fee keeps feeding the redemption pool until the deadline.</p>
+      <p>Quotes on the token page call the same math the trade uses (<code>quoteBuy / quoteSell / previewRedeem</code>) — what you see is what executes, minus your slippage tolerance.</p>
+    </section>
+    <section id="d-snipe">
+      <div class="kick2">06 · Snipe tax</div>
+      <h2>Bots pay the pool</h2>
+      <p>Buys in the first 3 seconds after launch pay an extra tax that starts at 99% and steps down to zero, computed from the launch timestamp. Every unit of tax goes into that token's redemption pool. The issuer's opening buy, made inside the launch transaction, is exempt.</p>
+    </section>
+    <section id="d-arc">
+      <div class="kick2">07 · Arc specifics</div>
+      <h2>USDC is the gas, the quote and the payout</h2>
+      <div class="tiles wide">
+        <div><div class="k">Network</div><div>Arc mainnet · chain id 5042 · gas fixed at 20 gwei (≈ $0.005 per 250k gas)</div></div>
+        <div><div class="k">Getting USDC in</div><div>CCTP V2 from Base, Arbitrum, Ethereum or Solana → domain 26. Arrives as native USDC in about a minute.</div></div>
+        <div><div class="k">Two faces of USDC</div><div>Native balance uses 18 decimals; the ERC-20 predeploy shows the same balance with 6. The API returns both a …Wei string and a formatted value — only compute on Wei.</div></div>
+        <div><div class="k">Blocklist</div><div>Transfers to blocklisted addresses revert on Arc. Issuer payouts are pull-based, so a blocked receiver only fails its own transaction.</div></div>
+      </div>
+    </section>
+    <section id="d-contracts">
+      <div class="kick2">08 · Contracts</div>
+      <h2>Seven contracts. The ones holding your money have no owner.</h2>
+      <div class="clist" id="clist"></div>
+      <p>The factory's only owner power is launching the official token, once. The sink holds the platform's 5% after the official pool closes and nothing else. Vault, curve and token have no owner, no pause and no admin withdrawal.</p>
+    </section>
+    <section id="d-api">
+      <div class="kick2">09 · API &amp; keeper</div>
+      <h2>Read-only endpoints, permissionless keeper</h2>
+      <div class="clist api">
+        <div><code>GET /api/health</code><span>Checks RPC, PoolManager, Factory and Lens one by one and names the broken link. 200 when all pass, 503 otherwise.</span></div>
+        <div><code>GET /api/tokens?start=0&amp;count=50</code><span>Every launch with pool, floor per token, deadline and locked share.</span></div>
+        <div><code>GET /api/token/{address}</code><span>All fields for one token plus its Uniswap V4 pool id.</span></div>
+        <div><code>GET /api/token/{address}?buy=&amp;sell=&amp;q=</code><span>Adds buyQuote / sellQuote / redeemQuote — burn payout vs market payout for the same amount, in wei.</span></div>
+        <div><code>GET /api/cron/keeper</code><span>Collects LP fees from graduated positions into their pools. Dry-run by default; reachable only from the box that runs it.</span></div>
+      </div>
+      <p>The keeper does one thing anyone could do: call <code>collectFees()</code> on graduated tokens. If nobody calls it, the pool shows less than it has earned — never more.</p>
+    </section>
+    <section id="d-security">
+      <div class="kick2">10 · Security</div>
+      <h2>What is and isn't guaranteed</h2>
+      <div class="tiles">
+        <div><div class="t">No owner, no pause, no admin withdrawal</div><p>The vault exposes redeem, fund and withdrawResidual (issuer only, after the deadline, once). Nothing else moves funds.</p></div>
+        <div><div class="t">Reentrancy guarded, tested on the real chain</div><p>Every fund-moving path is guarded and exercised against reentrant contracts. 108 Foundry tests, a full lifecycle on a fork of Arc's real PoolManager, and an end-to-end rehearsal on Arc mainnet.</p></div>
+        <div class="hot"><div class="t">No audit</div><p>Experimental contracts on a new chain. The pool only holds what fees actually delivered. Nothing here is guaranteed, safe or risk-free, and we won't describe it that way.</p></div>
+      </div>
+    </section>
+    <section id="d-disclosures">
+      <div class="kick2">11 · Disclosures</div>
+      <h2>Read this before you trade</h2>
+      <div class="dlist" id="dlist"></div>
+    </section>
+  </article>
+</div>
+</template>
+
+<script src="/vendor/ethers.umd.min.js"></script>
+<script>
+(async () => {
+const E = ethers;
+const $ = (id) => document.getElementById(id);
+const view = $("view");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const short = (a) => a ? a.slice(0, 6) + "…" + a.slice(-4) : "";
+const N = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+const fmt = (n, d = 2) => N(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+// USDC amounts: pools on mainnet run from cents to thousands, so pick precision by size.
+const usd = (n) => { n = N(n); if (n === 0) return "0.00"; if (n >= 1000) return fmt(n, 2); if (n >= 1) return fmt(n, 2); if (n >= 0.0001) return fmt(n, 4); return n.toPrecision(3).replace(/\.?0+$/, ""); };
+const tok = (n) => { n = N(n); if (n >= 1e9) return fmt(n / 1e9, 2) + "B"; if (n >= 1e6) return fmt(n / 1e6, 1) + "M"; if (n >= 1e3) return fmt(n / 1e3, 1) + "K"; return fmt(n, 0); };
+const per1m = (perToken) => usd(N(perToken) * 1e6);
+const cd = (ms) => { if (ms <= 0) return "CLOSED"; const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4), s = Math.floor(ms % 6e4 / 1e3); return d > 0 ? `${d}D ${String(h).padStart(2, "0")}H ${String(m).padStart(2, "0")}M ${String(s).padStart(2, "0")}S` : `${h}H ${String(m).padStart(2, "0")}M ${String(s).padStart(2, "0")}S`; };
+const cdParts = (t, n) => cd(t.deadline * 1000 - Date.now()).split(" ").slice(0, n).join(" ");
+const utc = (ts) => new Date(ts * 1000).toUTCString().replace(/:\d\d GMT$/, " UTC");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// ------------------------------------------------------------ bootstrap
+const cfg = await (await fetch("/api/config")).json();
+const netName = (cfg.networkName || "Arc").toUpperCase();
+$("net").textContent = `${netName === "ARC" ? "ARC MAINNET" : netName} · ${cfg.chainId}`;
+$("foot-net").textContent = `${cfg.networkName} · chain ${cfg.chainId}`;
+$("foot-explorer").href = cfg.explorer;
+$("bridge").href = cfg.bridgeUrl; $("bridge2").href = cfg.bridgeUrl;
+const readOnly = new E.JsonRpcProvider(cfg.rpcUrl, cfg.chainId, { staticNetwork: true });
+const factoryRO = new E.Contract(cfg.factory, cfg.abi.factory, readOnly);
+// The public RPC drops the odd call; the page must not boot half-configured.
+const retry = async (fn, n = 3) => { for (let i = 0; ; i++) { try { return await fn(); } catch (e) { if (i >= n - 1) throw e; await new Promise((r) => setTimeout(r, 400 * (i + 1))); } } };
+const [launchFeeWei, gradWei, virtualWei, curveDeployerAddr, officialFromChain] = await Promise.all([
+  retry(() => factoryRO.launchFee()), retry(() => factoryRO.graduationThreshold()), retry(() => factoryRO.virtualQuote()),
+  retry(() => factoryRO.curveDeployer()).catch(() => ""), retry(() => factoryRO.officialToken()).catch(() => ""),
+]);
+// the factory returns the zero address until the official token exists; the page treats that as "none"
+cfg.officialToken = officialFromChain && officialFromChain !== E.ZeroAddress ? officialFromChain
+  : cfg.officialToken && cfg.officialToken !== E.ZeroAddress ? cfg.officialToken : "";
+const launchFee = N(E.formatEther(launchFeeWei)), grad = N(E.formatEther(gradWei)), virtualQuote = N(E.formatEther(virtualWei));
+const explorerTx = (h) => `${cfg.explorer}/tx/${h}`;
+const explorerAddr = (a) => `${cfg.explorer}/address/${a}`;
+// Uniswap's interface keys chains by name; native USDC is the sell side.
+const UNI_CHAIN = { 5042: "arc" }[cfg.chainId] || cfg.chainId;
+const uniswapUrl = (t) => `${cfg.uniswapUrl}swap?chain=${UNI_CHAIN}&inputCurrency=NATIVE&outputCurrency=${t}`;
+readOnly.getBlockNumber().catch(() => { $("netdot").className = "bad"; });
+
+// ------------------------------------------------------------ state
+const S = { tokens: [], official: null, loadedAt: 0, route: "", filter: "ALL", sort: "POOL", search: "", tab: "buy", burn: "idle", form: { name: "", sym: "", desc: "", logo: "", socials: "", dev: "" }, launched: null };
+let provider, signer, me = null;
+
+const RULES = [
+  ["Every trade pays 3%.", "85% goes into that token's redemption pool, 10% to its issuer, 5% to the official pool. On the official token: 90% pool, 10% issuer."],
+  ["Burning pays the pool's pro-rata share.", "Your tokens ÷ total supply × the pool. Same rule for everyone; the vault has no owner, no pause, no admin withdrawal."],
+  ["Selling is usually worth more than burning.", "The pool holds a slice of fees; the market holds the capital. Burning is a floor, not the better exit. Compare both quotes first."],
+  ["Redemption ends at the deadline.", "Shown on every token. Whatever is left then goes to the issuer, once. Holding past the deadline pays nothing."],
+  ["Snipe tax.", "Buys in the first 3 seconds after launch pay up to 99% extra, and that tax goes into the pool. The issuer's own opening buy is exempt."],
+  ["Graduation.", "When real reserve hits the threshold, reserve and matching tokens move into a Uniswap V4 pool held forever; the unsold remainder is burned. Its 1% LP fee keeps feeding the pool."],
+  ["Locked Uniswap tokens can never be redeemed.", "That number moves with every swap. It is shown per token."],
+  ["The issuer keeps their share.", "Their 10% and the post-deadline residual are theirs by design; their own unburned tokens are part of supply like anyone else's."],
+  ["Nothing here is advice.", "Experimental contracts on a new chain with no audit. Amounts you cannot afford to lose do not belong here."],
+];
+
+// ------------------------------------------------------------ data
+let inflight = null;
+async function loadTokens(force) {
+  if (!force && S.tokens.length && Date.now() - S.loadedAt < 15000) return S.tokens;
+  if (inflight) return inflight;
+  inflight = fetchTokens().finally(() => { inflight = null; });
+  return inflight;
+}
+async function fetchTokens() {
+  const r = await fetch("/api/tokens?count=100");
+  if (!r.ok) throw new Error("live data unavailable (" + r.status + ")");
+  const d = await r.json();
+  S.tokens = (d.tokens || []).map((t, i) => ({ ...t, idx: i, official: !!cfg.officialToken && t.token.toLowerCase() === cfg.officialToken.toLowerCase() }));
+  S.official = S.tokens.find((t) => t.official) || null;
+  S.loadedAt = Date.now();
+  $("rehearsal").hidden = !(S.official && S.official.symbol !== "ASH");
+  $("prelaunch").hidden = !!(S.official || S.tokens.length);
+  return S.tokens;
+}
+async function loadToken(addr) {
+  const r = await fetch(`/api/token/${addr}`);
+  if (!r.ok) throw new Error((await r.json()).error || "token not found");
+  const t = await r.json();
+  t.official = !!cfg.officialToken && t.token.toLowerCase() === cfg.officialToken.toLowerCase();
+  return t;
+}
+const progressPct = (t) => t.graduated ? 100 : Math.min(100, t.graduationProgressBps / 100);
+const priceOf = (t) => N(t.graduated ? t.poolPriceUsdc : t.spotPriceUsdc);
+const closingSoon = (t) => t.isOpen && t.deadline * 1000 - Date.now() < 5 * 864e5;
+const parseUsdc = (v) => E.parseEther(String(v || "0").trim() || "0");
+const parseTok = (v) => E.parseUnits(String(v || "0").trim() || "0", 18);
+const num = (v) => { const n = parseFloat(String(v).replace(/,/g, "")); return isNaN(n) ? 0 : n; };
+
+// ------------------------------------------------------------ wallet
+async function ensureChain() {
+  const eth = window.ethereum, want = cfg.chainIdHex;
+  try { await eth.request({ method: "wallet_switchEthereumChain", params: [{ chainId: want }] }); }
+  catch (e) {
+    if (e.code !== 4902 && !/Unrecognized chain/i.test(e.message || "")) throw e;
+    await eth.request({ method: "wallet_addEthereumChain", params: [{ chainId: want, chainName: cfg.networkName, rpcUrls: [cfg.rpcUrl], nativeCurrency: cfg.nativeCurrency, blockExplorerUrls: [cfg.explorer] }] });
+  }
+}
+// connect() resolves once a wallet is attached, whichever door the user picks.
+let via = null, appkit = null, pendingConnect = null;
+function connect() {
+  if (me) return Promise.resolve();
+  if (pendingConnect) return pendingConnect;
+  pendingConnect = new Promise((resolve) => openChooser(resolve)).finally(() => { pendingConnect = null; });
+  return pendingConnect;
+}
+function openChooser(done) {
+  closeChooser();
+  const hasInjected = !!window.ethereum, hasWc = !!cfg.reownProjectId;
+  const el = document.createElement("div");
+  el.className = "chooser"; el.id = "chooser";
+  el.innerHTML = `<div class="cbox">
+    <div class="ch"><span>Connect</span><button class="cx" id="c-close" aria-label="close">×</button></div>
+    <button class="copt" id="c-inj" ${hasInjected ? "" : "disabled"}><b>Browser wallet</b><span>${hasInjected ? "MetaMask, OKX, Rabby or a wallet's in-app browser" : "No wallet extension found in this browser"}</span></button>
+    ${hasWc ? `<button class="copt" id="c-wc"><b>WalletConnect</b><span>Scan with a mobile wallet, or pick from the list</span></button>` : ""}
+    <div class="status" id="c-status">Arc is added to your wallet automatically. USDC is the gas.</div>
+  </div>`;
+  document.body.appendChild(el);
+  const finish = () => { closeChooser(); done(); };
+  el.addEventListener("click", (e) => { if (e.target === el) finish(); });
+  $("c-close").onclick = finish;
+  const fail = (e) => { const st = $("c-status"); if (st) { st.className = "status err"; st.textContent = errMsg(e); } };
+  $("c-inj").onclick = () => { $("c-status").className = "status"; $("c-status").textContent = "Confirm in your wallet…"; connectInjected().then(finish).catch(fail); };
+  $("c-wc")?.addEventListener("click", () => { $("c-status").className = "status"; $("c-status").textContent = "Loading WalletConnect…"; connectWalletConnect().then(finish).catch(fail); });
+}
+function closeChooser() { $("chooser")?.remove(); }
+async function connectInjected() {
+  await ensureChain();
+  await adopt(window.ethereum, "injected");
+}
+async function adopt(eip1193, kind) {
+  provider = new E.BrowserProvider(eip1193);
+  await provider.send("eth_requestAccounts", []);
+  const net = await provider.getNetwork();
+  if (Number(net.chainId) !== cfg.chainId) throw new Error(`Wallet is on chain ${net.chainId}; switch it to ${cfg.networkName} (${cfg.chainId})`);
+  signer = await provider.getSigner();
+  me = await signer.getAddress();
+  via = kind;
+  await refreshWallet();
+  render();
+}
+// Reown AppKit is several megabytes, so it is fetched only when someone asks for it.
+async function loadAppKit() {
+  if (appkit) return appkit;
+  const cdn = (p) => import(`https://esm.sh/${p}`);
+  const [{ createAppKit }, { EthersAdapter }, { defineChain }] = await Promise.all([
+    cdn("@reown/appkit@1"), cdn("@reown/appkit-adapter-ethers@1"), cdn("@reown/appkit@1/networks"),
+  ]);
+  const arc = defineChain({
+    id: cfg.chainId, caipNetworkId: `eip155:${cfg.chainId}`, chainNamespace: "eip155", name: cfg.networkName,
+    nativeCurrency: cfg.nativeCurrency, rpcUrls: { default: { http: [cfg.rpcUrl] } },
+    blockExplorers: { default: { name: "Explorer", url: cfg.explorer } },
+  });
+  const modal = createAppKit({
+    adapters: [new EthersAdapter()], networks: [arc], defaultNetwork: arc, projectId: cfg.reownProjectId,
+    metadata: { name: "AshonArc", description: "Burn for USDC. A launchpad on Arc.", url: location.origin, icons: [location.origin + "/logo-256.png"] },
+    features: { analytics: false, email: false, socials: false, swaps: false, onramp: false, history: false },
+    themeMode: "dark",
+    themeVariables: { "--w3m-accent": "#fc5201", "--w3m-font-family": "'IBM Plex Mono', monospace", "--w3m-border-radius-master": "0px", "--w3m-z-index": 100 },
+  });
+  modal.subscribeAccount((acc) => {
+    if (via !== "wc") return;
+    if (!acc?.isConnected || (acc.address && me && acc.address.toLowerCase() !== me.toLowerCase())) location.reload();
+  });
+  appkit = { modal, arc };
+  return appkit;
+}
+async function connectWalletConnect() {
+  const { modal, arc } = await loadAppKit();
+  const eip1193 = await new Promise((resolve, reject) => {
+    let done = false;
+    const unsub = modal.subscribeProviders((state) => { const p = state?.eip155; if (p && !done) { done = true; unsub?.(); resolve(p); } });
+    const unsubState = modal.subscribeState((st) => { if (!st.open && !done) { setTimeout(() => { if (!done) { done = true; unsub?.(); unsubState?.(); reject(new Error("WalletConnect closed")); } }, 500); } });
+    modal.open({ view: "Connect" });
+  });
+  try { const cur = modal.getCaipNetworkId?.() || modal.getCaipNetwork?.()?.caipNetworkId; if (cur && cur !== arc.caipNetworkId) await modal.switchNetwork(arc); } catch {}
+  await adopt(eip1193, "wc");
+}
+async function refreshWallet() {
+  if (!me) return;
+  const bal = await readOnly.getBalance(me);
+  $("connect").textContent = `${short(me)} · ${fmt(E.formatEther(bal), 2)} USDC`;
+  $("nofunds").hidden = bal > 0n;
+}
+$("connect").onclick = () => { if (me && via === "wc" && appkit) appkit.modal.open({ view: "Account" }); else connect().catch((e) => alert(errMsg(e))); };
+if (window.ethereum) { window.ethereum.on?.("accountsChanged", () => { if (via === "injected") location.reload(); }); window.ethereum.on?.("chainChanged", () => { if (via === "injected") location.reload(); }); }
+const errMsg = (e) => e?.shortMessage || e?.reason || e?.message || String(e);
+
+// ------------------------------------------------------------ particles
+function particles(n, kind) {
+  if (reduced) return "";
+  let out = "";
+  for (let i = 0; i < n; i++) {
+    const s = 3 + Math.random() * 5, left = Math.random() * 100, delay = -Math.random() * 6, dur = 3.5 + Math.random() * 3, dx = ((Math.random() - .5) * 140).toFixed(0) + "px";
+    out += kind === "ember"
+      ? `<i class="ember" style="bottom:-6px;left:${left.toFixed(1)}%;width:${s.toFixed(1)}px;height:${s.toFixed(1)}px;background:${i % 3 ? "#fc5201" : "#ffb38a"};opacity:0;--dx:${dx};animation:emberRise ${dur.toFixed(2)}s linear ${delay.toFixed(2)}s infinite"></i>`
+      : `<i class="ashp" style="top:38%;left:${(28 + Math.random() * 44).toFixed(1)}%;width:${s.toFixed(1)}px;height:${s.toFixed(1)}px;background:${i % 4 ? "#8c8c8a" : "#fc5201"};--dx:${dx};animation:ashFall ${(1.4 + Math.random()).toFixed(2)}s ease-in ${(Math.random() * 1.2).toFixed(2)}s infinite"></i>`;
+  }
+  return `<div class="particles">${out}</div>`;
+}
+const flame = (px) => `<img class="flame" src="/logo-256.png" alt="" style="width:${px}px;height:${px}px">`;
+
+// ------------------------------------------------------------ shared pieces
+function tagOf(t) { return t.official ? `<span class="tag official">OFFICIAL</span>` : t.graduated ? `<span class="tag grad">GRADUATED</span>` : `<span class="tag curve">CURVE</span>`; }
+function iniOf(t, cls = "") {
+  const logo = /^https:\/\//i.test(t.logo || "") ? t.logo : "";
+  const ini = esc((t.symbol || "??").slice(0, 2).toUpperCase());
+  return `<div class="ini ${cls}">${logo ? `<img src="${esc(logo)}" alt="" onerror="this.replaceWith(document.createTextNode('${ini}'))">` : ini}</div>`;
+}
+function card(t) {
+  return `<button class="card ${t.official ? "official" : ""}" data-open="${t.token}">
+    <div class="top"><div class="id">${iniOf(t)}<div><div class="nm">${esc(t.name)}</div><div class="sy">$${esc(t.symbol)} · ${short(t.token)}</div></div></div>${tagOf(t)}</div>
+    <div class="pool tab">${usd(t.reserveUsdc)}<small>USDC IN POOL</small></div>
+    <div class="bar"><i style="width:${progressPct(t).toFixed(1)}%"></i></div>
+    <div class="kv">
+      <div><div class="k">FLOOR/1M</div><div class="v tab">${per1m(t.backingPerTokenUsdc)}</div></div>
+      <div><div class="k">${t.graduated ? "POOL/1M" : "CURVE/1M"}</div><div class="v tab">${per1m(priceOf(t))}</div></div>
+      <div><div class="k">CLOSES IN</div><div class="v tab" data-deadline="${t.deadline}" data-parts="2">${t.isOpen ? cdParts(t, 2) : "CLOSED"}</div></div>
+    </div></button>`;
+}
+function filterTokens(list) {
+  const q = S.search.trim().toLowerCase();
+  return list
+    .filter((t) => S.filter === "ALL" || (S.filter === "ON CURVE" && !t.graduated) || (S.filter === "GRADUATED" && t.graduated) || (S.filter === "CLOSING SOON" && closingSoon(t)))
+    .filter((t) => !q || t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.token.toLowerCase().includes(q))
+    .sort((a, b) => S.sort === "POOL" ? N(b.reserveUsdc) - N(a.reserveUsdc) : S.sort === "CLOSING" ? a.deadline - b.deadline : b.idx - a.idx);
+}
+const filtersHtml = () => `<div class="filters">${["ALL", "ON CURVE", "GRADUATED", "CLOSING SOON"].map((f) => `<button data-filter="${f}" class="${S.filter === f ? "on" : ""}">${f}</button>`).join("")}</div>`;
+const feebar = (you) => `<div class="feebar"><i class="a"></i><i class="b2"></i><i class="c"></i></div><div class="feeleg"><span><b>85%</b> POOL</span><span><b class="w">10%</b> ${you ? "YOU" : "ISSUER"}</span><span>5% OFFICIAL POOL</span></div>`;
+const stats = (list) => ({
+  pools: list.reduce((a, t) => a + N(t.reserveUsdc), 0),
+  withdrawn: list.reduce((a, t) => a + N(t.totalRedeemedUsdc), 0),
+  burned: list.reduce((a, t) => a + N(t.totalBurned), 0),
+  graduated: list.filter((t) => t.graduated).length,
+  curve: list.filter((t) => !t.graduated).length,
+  closing: list.filter(closingSoon).length,
+});
+
+// ------------------------------------------------------------ views
+async function viewHome() {
+  const list = await loadTokens();
+  const st = stats(list);
+  const o = S.official;
+  const burns = list.filter((t) => N(t.totalBurned) > 0).map((t) => `${esc(t.symbol)} · ${tok(t.totalBurned)} BURNED → ${usd(t.totalRedeemedUsdc)} USDC WITHDRAWN`);
+  const tickerItems = burns.length ? burns : list.length ? [`NO BURNS YET · ${list.length} POOL${list.length > 1 ? "S" : ""} FILLING`, "EVERY TRADE PAYS 3% · 85% TO THE POOL"] : ["NO LAUNCHES YET"];
+  const items = tickerItems.concat(tickerItems, tickerItems, tickerItems).map((s) => `<span>${s}</span>`).join("");
+  const newest = filterTokens(list).slice(0, 6);
+  view.innerHTML = `
+  <section class="hero"><div class="in">
+    <div>
+      <div class="kick"><span class="badge">LAUNCHPAD</span><span>Burn-to-withdraw · priced in USDC · Arc</span></div>
+      <h1>Not<br>deflation.<br><span class="out">It's a</span> withdrawal.</h1>
+      <p>Every trade pays 3%. 85% of it lands in that token's own USDC pool. Burn your tokens whenever you want inside the 30-day window and pull out your exact share. Pro-rata. No owner. No pause button.</p>
+      <div class="cta"><a class="b b-black" href="#/launch">Launch a token — ${usd(launchFee)} USDC</a><a class="b b-oblack" href="#launches">See what's burning ↓</a></div>
+    </div>
+    ${o ? `<div class="ocard">${particles(36, "ember")}
+      <div class="row"><span style="color:var(--hot)">$${esc(o.symbol)} · OFFICIAL</span><span style="color:var(--dim)">SAME RULES · 90% TO POOL</span></div>
+      <div class="pool">${flame(84)}<div><div class="k" style="font-size:11px">POOL RIGHT NOW</div><div class="big tab">${usd(o.reserveUsdc)}</div><div class="sub">USDC · verifiable on-chain</div></div></div>
+      <div class="two">
+        <div><div class="k">REDEMPTION CLOSES IN</div><div class="v tab" style="color:var(--hot)" data-deadline="${o.deadline}" data-parts="3">${o.isOpen ? cdParts(o, 3) : "CLOSED"}</div></div>
+        <div><div class="k">FLOOR PER 1M</div><div class="v tab">${per1m(o.backingPerTokenUsdc)} USDC</div></div>
+      </div>
+      <div class="acts"><a class="b b-hot" href="#/token/${o.token}">Trade</a><a class="b b-oink" href="#/token/${o.token}?tab=burn">Burn</a></div>
+    </div>` : `<div class="ocard"><div class="row"><span style="color:var(--hot)">OFFICIAL TOKEN</span><span style="color:var(--dim)">NOT LAUNCHED YET</span></div><div class="pool">${flame(84)}<div><div class="k" style="font-size:11px">STATUS</div><div class="big">SOON</div><div class="sub">same contracts, same rules</div></div></div></div>`}
+  </div></section>
+  <section class="ticker"><div class="row"><span class="lbl">LIVE BURNS</span><div class="track"><div class="run">${items}</div></div></div></section>
+  <section class="stats"><div class="g">
+    <div class="c"><div class="k">SITTING IN POOLS</div><div class="v tab">${usd(st.pools)}</div><div class="s">USDC</div></div>
+    <div class="c hot"><div class="k">WITHDRAWN BY BURNING</div><div class="v tab">${usd(st.withdrawn)}</div><div class="s">USDC</div></div>
+    <div class="c"><div class="k">TOKENS BURNED</div><div class="v tab">${tok(st.burned)}</div><div class="s">across all launches</div></div>
+    <div class="c"><div class="k">LAUNCHES</div><div class="v tab">${list.length}</div><div class="s">${st.graduated} graduated to Uniswap</div></div>
+  </div></section>
+  <section id="launches" class="in sec">
+    <div class="sec-head"><h2>Launches</h2>${filtersHtml()}<span style="flex:1"></span><a class="linkline" href="#/launches">ALL ${list.length} LAUNCHES →</a></div>
+    <div class="grid-cards">${newest.length ? newest.map(card).join("") : `<div class="empty" style="grid-column:1/-1">${list.length ? "No launches match" : cfg.officialToken ? "No launches yet · be the first" : "Launches open when $ASH is live"}</div>`}</div>
+  </section>
+  <section class="in steps">
+    <div><div class="kick2">How the pool fills</div><h2>Trade.<br>Fill.<br><span>Burn.</span></h2><p class="lead">Three steps, all on-chain, none of them owned by anyone. The pool is one contract per token. Its balance is the only thing that matters.</p></div>
+    <div class="steplist">
+      <div class="step"><div class="n">1</div><div class="bd"><div class="t">Every trade pays 3%</div><p>Split the moment it lands, no keeper needed on the curve.</p>${feebar(false)}</div></div>
+      <div class="step"><div class="n">2</div><div class="bd"><div class="t">The pool fills with USDC</div><p>One vault per token. Public balance. No admin key, no pause, no early withdrawal. <span class="mono" style="color:var(--ink)">floor = pool ÷ supply</span></p></div></div>
+      <div class="step hot"><div class="n">3</div><div class="bd"><div class="t">Burn. Withdraw. Done.</div><p>Burn q tokens, receive q ÷ supply × pool in USDC, same transaction. 30-day window; after that the residual goes to the issuer, once.</p></div></div>
+    </div>
+  </section>
+  <section class="in" style="padding-top:96px">
+    <div class="rules-head"><h2>Read this before you trade</h2><span>9 RULES · ALL IN THE BYTECODE</span></div>
+    <div class="rules">${RULES.map((r, i) => `<div class="rule"><div class="n">${String(i + 1).padStart(2, "0")}</div><div class="t">${r[0]}</div><p>${r[1]}</p></div>`).join("")}</div>
+  </section>
+  <section class="in" style="padding:0"><div class="ctabox"><div><div class="t">Wallet empty on Arc? USDC is the gas here.</div><div class="s">Bridge from Base, Arbitrum, Ethereum or Solana over CCTP (domain 26). It lands as native USDC in about a minute — the same coin pays gas and buys tokens.</div></div><a class="b b-ink b-sm" href="${esc(cfg.bridgeUrl)}" target="_blank" rel="noopener">Get USDC on Arc ↗</a></div></section>`;
+  wireCards();
+}
+
+async function viewLaunches() {
+  const list = await loadTokens();
+  const st = stats(list);
+  const shown = filterTokens(list);
+  view.innerHTML = `
+  <div class="phead dark"><div class="in row">
+    <div><div class="kick2">All launches · ${netName === "ARC" ? "Arc mainnet" : cfg.networkName}</div><h1>${list.length} token${list.length === 1 ? "" : "s"}.<br>${list.length} pool${list.length === 1 ? "" : "s"}.</h1></div>
+    <a class="b b-hot b-sm" href="#/launch">+ Launch a token</a>
+  </div></div>
+  <section class="stats small"><div class="g" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+    <div class="c"><div class="k">IN POOLS</div><div class="v tab">${usd(st.pools)}</div></div>
+    <div class="c hot"><div class="k">WITHDRAWN BY BURNING</div><div class="v tab">${usd(st.withdrawn)}</div></div>
+    <div class="c"><div class="k">ON THE CURVE</div><div class="v tab">${st.curve}</div></div>
+    <div class="c"><div class="k">GRADUATED</div><div class="v tab">${st.graduated}</div></div>
+    <div class="c"><div class="k">CLOSING &lt; 5 DAYS</div><div class="v tab" style="color:var(--bad)">${st.closing}</div></div>
+  </div></section>
+  <div class="in" style="padding-top:28px;padding-bottom:96px">
+    <div class="controls">
+      <div class="search"><span>⌕</span><input id="search" value="${esc(S.search)}" placeholder="SEARCH NAME / SYMBOL / ADDRESS"></div>
+      ${filtersHtml()}
+      <span style="flex:1"></span>
+      <div class="sorts">SORT ${["POOL", "CLOSING", "NEWEST"].map((k) => `<button data-sort="${k}" class="${S.sort === k ? "on" : ""}">${k}</button>`).join("")}</div>
+    </div>
+    <div class="grid-cards" style="margin-top:24px" id="cards">${shown.length ? shown.map(card).join("") : ""}</div>
+    ${shown.length ? "" : `<div class="empty">NO LAUNCHES MATCH · <a href="#" id="clear">CLEAR FILTERS</a></div>`}
+  </div>`;
+  wireCards();
+  $("search").oninput = (e) => { S.search = e.target.value; const c = $("cards"); const list2 = filterTokens(S.tokens); c.innerHTML = list2.map(card).join("") || ""; wireCards(); };
+  view.querySelectorAll("[data-sort]").forEach((b) => b.onclick = () => { S.sort = b.dataset.sort; viewLaunches(); });
+  $("clear")?.addEventListener("click", (e) => { e.preventDefault(); S.search = ""; S.filter = "ALL"; viewLaunches(); });
+}
+
+function wireCards() {
+  view.querySelectorAll("[data-open]").forEach((c) => c.onclick = () => { location.hash = `#/token/${c.dataset.open}`; });
+  view.querySelectorAll("[data-filter]").forEach((b) => b.onclick = () => { S.filter = b.dataset.filter; render(); });
+}
+
+// ------------------------------------------------------------ token page
+async function viewToken(addr, wantTab) {
+  let t;
+  try { t = await loadToken(addr); } catch (e) { view.innerHTML = `<div class="in" style="padding:96px 32px"><div class="empty">${esc(e.message)} · <a href="#/launches">ALL LAUNCHES</a></div></div>`; return; }
+  if (wantTab) S.tab = wantTab;
+  if (t.graduated && S.tab === "sell") S.tab = "burn";
+  const graduated = t.graduated;
+  const price = priceOf(t);
+  const floorRatio = price > 0 ? Math.min(999, N(t.backingPerTokenUsdc) / price * 100) : 0;
+  const socials = (t.socials || "").replace(/^https?:\/\//, "");
+  view.innerHTML = `
+  <div class="thead ${t.official ? "official" : ""}"><div class="in">
+    <a class="chip" href="#/launches">← ALL</a>
+    ${iniOf(t)}
+    <div class="tinfo">
+      <div class="ttl"><span class="nm">${esc(t.name)}</span><span class="sy">$${esc(t.symbol)}</span><span class="tag ${t.official ? "official" : graduated ? "grad" : "curve"}">${graduated ? "GRADUATED · UNISWAP V4" : "ON THE CURVE"}${t.official ? " · OFFICIAL" : ""}</span></div>
+      <div class="desc">${esc(t.description || "")}${socials ? ` <a href="https://${esc(socials)}" target="_blank" rel="noopener">${esc(socials)}</a>` : ""}</div>
+    </div>
+    <a class="chip taddr" href="${explorerAddr(t.token)}" target="_blank" rel="noopener">${short(t.token)} ↗</a>
+  </div></div>
+  <div class="in tbody">
+    <div class="tcol">
+      <div class="meterbox">
+        <div class="meter"><div class="k">POOL FILL → GRADUATION</div>
+          <div class="tube"><div class="fill" style="height:${progressPct(t).toFixed(1)}%">${reduced ? "" : '<div class="wave"></div>'}</div><div class="lbl">${progressPct(t).toFixed(0)}%</div></div>
+          <div class="under">${graduated ? usd(t.graduationThresholdUsdc) : usd(t.realQuoteUsdc)} USDC<br>of ${usd(t.graduationThresholdUsdc)} USDC</div></div>
+        <div class="cells">
+          <div class="cell"><div class="k">REDEMPTION POOL</div><div class="v tab">${usd(t.reserveUsdc)}</div><div class="s">USDC</div></div>
+          <div class="cell hot"><div class="k">REDEMPTION ${t.isOpen ? "CLOSES IN" : "CLOSED"}</div><div class="v tab" style="font-size:clamp(20px,2.2vw,28px)" data-deadline="${t.deadline}" data-parts="3">${t.isOpen ? cdParts(t, 3) : "CLOSED"}</div><div class="s">${utc(t.deadline)}</div></div>
+          <div class="cell"><div class="k">BURN FLOOR / 1M</div><div class="v tab">${per1m(t.backingPerTokenUsdc)}</div><div class="s">USDC · pool ÷ supply</div></div>
+          <div class="cell"><div class="k">${graduated ? "UNISWAP PRICE" : "CURVE PRICE"} / 1M</div><div class="v tab">${per1m(price)}</div><div class="s">USDC · ${price > 0 ? floorRatio.toFixed(0) + "% of market is floor" : "no market yet"}</div></div>
+        </div>
+      </div>
+      <div class="dl"><span class="chipb">Deadline</span><div><b>${utc(t.deadline)}.</b> After that, anything left in the pool goes to the issuer (${short(t.issuer)}), once. Holding past the deadline pays nothing. Selling usually pays more than burning — compare both quotes.</div></div>
+      <div class="box"><div class="bh"><span style="font-family:var(--display);font-size:16px;color:inherit;letter-spacing:0">Pool ledger</span><span>SINCE LAUNCH</span></div>
+        <div class="ledger">
+          <div><div class="k">FEES → POOL</div><div class="v tab">${usd(t.totalFeesToPoolUsdc)} USDC</div></div>
+          <div><div class="k">REDEEMED</div><div class="v tab hot">${usd(t.totalRedeemedUsdc)} USDC</div></div>
+          <div><div class="k">BURNED</div><div class="v tab">${tok(t.totalBurned)} ${esc(t.symbol)}</div></div>
+          <div><div class="k">SNIPE TAX → POOL</div><div class="v tab">${usd(t.totalSnipeTaxUsdc)} USDC</div></div>
+          <div><div class="k">${graduated ? "LOCKED IN UNISWAP" : "TO GRADUATION"}</div><div class="v tab">${graduated ? fmt(t.lockedInPoolPct, 2) + "% OF SUPPLY" : progressPct(t).toFixed(1) + "%"}</div></div>
+          <div><div class="k">${graduated ? "UNISWAP POOL" : "GRADUATES AT"}</div><div class="v tab">${graduated ? `<a href="${uniswapUrl(t.token)}" target="_blank" rel="noopener">V4 · 1% LP FEE ↗</a>` : usd(t.graduationThresholdUsdc) + " USDC"}</div></div>
+          ${graduated ? `<div><div class="k">BURNED AT GRADUATION</div><div class="v tab">${tok(t.burnedAtGraduation)} ${esc(t.symbol)}</div></div><div style="grid-column:span 2"><div class="k">POOL ID</div><div class="v" style="font-size:11px;font-weight:400;color:var(--dim)">${esc(t.poolId)}</div></div>` : ""}
+        </div>
+      </div>
+      <div class="box" id="activity" hidden><div class="bh"><span style="font-family:var(--display);font-size:16px;color:inherit;letter-spacing:0">Recent activity</span><span id="act-note"></span></div><div id="act-rows"></div></div>
+    </div>
+    <aside class="aside">
+      <div class="trade">
+        <div class="tabs"><button data-tab="buy" class="${S.tab === "buy" ? "on" : ""}">Buy</button><button data-tab="sell" class="${S.tab === "sell" ? "on" : ""}">Sell</button><button data-tab="burn" class="${S.tab === "burn" ? "on" : ""}">Burn</button></div>
+        <div class="pane" id="pane"></div>
+      </div>
+      <div class="pos" id="pos"></div>
+    </aside>
+  </div>`;
+  view.querySelectorAll("[data-tab]").forEach((b) => b.onclick = () => { S.tab = b.dataset.tab; S.burn = "idle"; renderPane(t); });
+  renderPane(t);
+  renderPos(t);
+  loadActivity(t).catch(() => {});
+}
+
+function renderPos(t) {
+  const el = $("pos"); if (!el) return;
+  if (!me) { el.innerHTML = `<div class="t">Your position</div><p>Connect a wallet to see your balance and both exit quotes.</p><button class="b b-oink b-sm" style="width:100%;margin-top:12px;font-size:12px" id="pos-connect">Connect wallet</button>`; $("pos-connect").onclick = () => connect().catch((e) => alert(errMsg(e))); return; }
+  el.innerHTML = `<div class="t">Your position</div><div class="g"><div><div class="k">HOLDING</div><div class="v tab">…</div></div></div>`;
+  (async () => {
+    const tk = new E.Contract(t.token, cfg.abi.token, readOnly), cv = new E.Contract(t.curve, cfg.abi.curve, readOnly), vt = new E.Contract(t.vault, cfg.abi.vault, readOnly);
+    const [bal, claimable, usdcBal] = await Promise.all([tk.balanceOf(me), cv.claimable(me), readOnly.getBalance(me)]);
+    let floor = 0n, market = null;
+    if (bal > 0n) {
+      floor = await vt.previewRedeem(bal).catch(() => 0n);
+      if (!t.graduated) { try { const r = await (await fetch(`/api/token/${t.token}?sell=${bal}`)).json(); market = r.sellQuote?.usdcOut; } catch {} }
+    }
+    S.bal = bal;
+    el.innerHTML = `<div class="t">Your position</div><div class="g">
+      <div><div class="k">HOLDING</div><div class="v tab">${tok(E.formatUnits(bal, 18))} ${esc(t.symbol)}</div></div>
+      <div><div class="k">IF BURNED NOW</div><div class="v tab hot">${usd(E.formatEther(floor))} USDC</div></div>
+      <div><div class="k">IF SOLD NOW</div><div class="v tab">${t.graduated ? "ON UNISWAP" : market == null ? "—" : usd(market) + " USDC"}</div></div>
+      <div><div class="k">USDC IN WALLET</div><div class="v tab">${usd(E.formatEther(usdcBal))}</div></div></div>
+      ${claimable > 0n ? `<div class="claim"><span>ISSUER SHARE <b style="color:var(--ink)">${usd(E.formatEther(claimable))} USDC</b></span><button class="b b-oink b-sm" style="font-size:12px;padding:8px 12px" id="claim-go">Claim</button></div>` : ""}
+      <div class="status" id="pos-status"></div>`;
+    $("claim-go")?.addEventListener("click", () => runTx("Claim", $("pos-status"), async () => new E.Contract(t.curve, cfg.abi.curve, signer).claim(me), t));
+    const mx = $("burn-max"); if (mx) mx.textContent = `MAX ${tok(E.formatUnits(bal, 18))}`;
+  })().catch(() => {});
+}
+
+async function runTx(label, statusEl, fn, t) {
+  // Connecting re-renders the page (labels flip from "Connect wallet"), so the
+  // action itself waits for a second click instead of firing into a stale DOM.
+  if (!me) { await connect(); return; }
+  statusEl.className = "status"; statusEl.textContent = `${label}… confirm in your wallet`;
+  try {
+    const tx = await fn();
+    statusEl.textContent = `${label} sent · waiting for the chain…`;
+    const rc = await tx.wait();
+    statusEl.className = "status ok";
+    statusEl.innerHTML = `${label} confirmed · <a href="${explorerTx(rc.hash)}" target="_blank" rel="noopener">TX ↗</a>`;
+    await refreshWallet();
+    await loadTokens(true);
+    const fresh = await loadToken(t.token);
+    if (fresh.graduated !== t.graduated) { viewToken(t.token, S.tab); return; }
+    Object.assign(t, fresh);
+    renderPos(t);
+    return rc;
+  } catch (e) { statusEl.className = "status err"; statusEl.textContent = errMsg(e); }
+}
+
+function renderPane(t) {
+  const pane = $("pane"); if (!pane) return;
+  view.querySelectorAll("[data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === S.tab));
+  const sym = esc(t.symbol);
+  const cta = (txt) => me ? txt : "Connect wallet";
+  if (S.tab === "buy" || S.tab === "sell") {
+    if (t.graduated) {
+      pane.innerHTML = `<p class="gradnote">This token has graduated: buying and selling happen on Uniswap now. The pool's 1% LP fee keeps feeding the redemption pool.</p><a class="b b-hot" style="width:100%" href="${uniswapUrl(t.token)}" target="_blank" rel="noopener">Trade on Uniswap ↗</a>`;
+      return;
+    }
+    if (S.tab === "buy") {
+      pane.innerHTML = `<div class="lbl"><span>YOU PAY</span></div><div class="inrow"><input id="buy-in" placeholder="0.00" inputmode="decimal" autocomplete="off"><span>USDC</span></div>
+        <div class="qrow" style="margin-top:14px"><span>YOU RECEIVE</span><b id="buy-out">—</b></div><div class="qrow"><span>FEE 3% → 85% POOL</span><b id="buy-fee">—</b></div><div class="qrow warn" id="buy-tax" hidden><span>SNIPE TAX · WAIT A FEW SECONDS</span><b id="buy-tax-v"></b></div>
+        <button class="b b-hot" style="width:100%;margin-top:16px;font-size:15px" id="buy-go">${cta("Buy " + sym)}</button><div class="status" id="tr-status"></div>`;
+      let q = null;
+      const quote = async () => { const v = $("buy-in").value; if (!v || num(v) <= 0) { q = null; $("buy-out").textContent = "—"; $("buy-fee").textContent = "—"; $("buy-tax").hidden = true; return; }
+        const r = await (await fetch(`/api/token/${t.token}?buy=${parseUsdc(v)}&for=${me || E.ZeroAddress}`)).json(); q = r.buyQuote;
+        $("buy-out").textContent = `${tok(q.tokensOut)} ${t.symbol}`; $("buy-fee").textContent = `${usd(q.feeUsdc)} USDC`;
+        const tax = N(q.snipeTaxUsdc); $("buy-tax").hidden = !(tax > 0); $("buy-tax-v").textContent = `${usd(tax)} USDC`; };
+      $("buy-in").oninput = () => quote().catch(() => {});
+      $("buy-go").onclick = () => runTx("Buy", $("tr-status"), async () => { await quote(); if (!q) throw new Error("Enter an amount"); return new E.Contract(t.curve, cfg.abi.curve, signer).buy(BigInt(q.tokensOutWei) * 99n / 100n, me, { value: parseUsdc($("buy-in").value) }); }, t);
+    } else {
+      pane.innerHTML = `<div class="lbl"><span>YOU SELL</span><button id="sell-max">MAX</button></div><div class="inrow"><input id="sell-in" placeholder="0" inputmode="decimal" autocomplete="off"><span>${sym}</span></div>
+        <div class="qrow" style="margin-top:14px"><span>YOU RECEIVE</span><b id="sell-out">—</b></div><div class="qrow"><span>BURNING INSTEAD PAYS</span><b id="sell-alt">—</b></div>
+        <button class="b b-ink" style="width:100%;margin-top:16px;font-size:15px" id="sell-go">${cta("Sell " + sym)}</button><div class="status" id="tr-status"></div>`;
+      let q = null;
+      const quote = async () => { const v = $("sell-in").value; if (!v || num(v) <= 0) { q = null; $("sell-out").textContent = "—"; $("sell-alt").textContent = "—"; return; }
+        const w = parseTok(v); const r = await (await fetch(`/api/token/${t.token}?sell=${w}&q=${w}`)).json(); q = r.sellQuote;
+        $("sell-out").textContent = `${usd(q.usdcOut)} USDC`; $("sell-alt").textContent = `${usd(r.redeemQuote.usdcOut)} USDC`; };
+      $("sell-in").oninput = () => quote().catch(() => {});
+      $("sell-max").onclick = () => { if (S.bal != null) { $("sell-in").value = E.formatUnits(S.bal, 18); quote().catch(() => {}); } };
+      $("sell-go").onclick = () => runTx("Sell", $("tr-status"), async () => { await quote(); if (!q) throw new Error("Enter an amount"); const amount = parseTok($("sell-in").value); await approveIfNeeded(t, t.curve, amount, $("tr-status")); return new E.Contract(t.curve, cfg.abi.curve, signer).sell(amount, BigInt(q.usdcOutWei) * 99n / 100n, me); }, t);
+    }
+    return;
+  }
+  // ---- burn tab
+  if (S.burn === "idle") {
+    pane.innerHTML = `<div class="lbl"><span>YOU BURN</span><button id="burn-max">MAX${S.bal != null ? " " + tok(E.formatUnits(S.bal, 18)) : ""}</button></div>
+      <div class="inrow hot"><input id="burn-in" placeholder="0" inputmode="decimal" autocomplete="off"><span>${sym}</span></div>
+      <div class="qbox"><div class="top"><span>BURNING PAYS</span><b class="tab" id="burn-out">— USDC</b></div>
+        <div class="mid"><span>${t.graduated ? "SELLING ON UNISWAP" : "SELLING ON THE CURVE"}</span><b id="burn-alt">${t.graduated ? `<a href="${uniswapUrl(t.token)}" target="_blank" rel="noopener">CHECK QUOTE ↗</a>` : "—"}</b></div>
+        <div class="hint" id="burn-hint">Burning pays the pool's pro-rata share. Selling usually pays more — compare first.</div></div>
+      <button class="hold" id="hold"><div class="fill" id="hold-fill"></div><div class="lab" id="hold-lab"><img src="/logo-256.png" alt="">Hold to burn</div></button>
+      <div class="fine">IRREVERSIBLE · TOKENS DESTROYED · USDC SAME TX</div><div class="status" id="burn-status"></div>`;
+    let q = null;
+    const quote = async () => { const v = $("burn-in").value; if (!v || num(v) <= 0) { q = null; $("burn-out").textContent = "— USDC"; if (!t.graduated) $("burn-alt").textContent = "—"; return; }
+      const w = parseTok(v); const r = await (await fetch(`/api/token/${t.token}?q=${w}${t.graduated ? "" : `&sell=${w}`}`)).json(); q = r.redeemQuote;
+      $("burn-out").textContent = `${usd(q.usdcOut)} USDC`;
+      if (r.sellQuote) { $("burn-alt").textContent = `${usd(r.sellQuote.usdcOut)} USDC`; const better = N(r.sellQuote.usdcOut) > N(q.usdcOut); $("burn-hint").textContent = better ? "Selling pays more right now. Burn only if you want the guaranteed pool share." : "Burning pays more than selling right now."; $("burn-hint").className = "hint" + (better ? "" : " ok"); } };
+    $("burn-in").oninput = () => quote().catch(() => {});
+    $("burn-max").onclick = () => { if (S.bal != null) { $("burn-in").value = E.formatUnits(S.bal, 18); quote().catch(() => {}); } };
+    // hold-to-burn: 0.8s of pressure, then the real transaction
+    const hold = $("hold"), fill = $("hold-fill"), lab = $("hold-lab");
+    let pct = 0, timer = null;
+    const reset = () => { clearInterval(timer); timer = null; pct = 0; fill.style.width = "0%"; hold.classList.remove("far"); lab.innerHTML = `<img src="/logo-256.png" alt="">Hold to burn`; };
+    const start = async (e) => {
+      e.preventDefault();
+      if (!me) { connect().catch((x) => alert(errMsg(x))); return; }
+      if (!$("burn-in").value || num($("burn-in").value) <= 0) { $("burn-status").className = "status err"; $("burn-status").textContent = "Enter an amount"; return; }
+      if (timer) return;
+      timer = setInterval(() => { pct = Math.min(100, pct + 2.5); fill.style.width = pct + "%"; hold.classList.toggle("far", pct > 50); lab.innerHTML = `<img src="/logo-256.png" alt="">${pct < 100 ? "Keep holding…" : "Burning"}`; if (pct >= 100) { clearInterval(timer); timer = null; fire(); } }, 20);
+    };
+    const fire = async () => {
+      let quoteNow; try { await quote(); quoteNow = q; } catch (e) { $("burn-status").className = "status err"; $("burn-status").textContent = errMsg(e); reset(); return; }
+      if (!quoteNow) { reset(); return; }
+      const amount = parseTok($("burn-in").value), expect = N(quoteNow.usdcOut);
+      S.burn = "active";
+      pane.innerHTML = `<div class="burning">${particles(30, "ash")}${flame(96)}<div class="k">BURNING</div><div class="tk tab">${tok(E.formatUnits(amount, 18))} <small>${sym}</small></div><div class="k">WITHDRAWING</div><div class="us tab">${usd(expect)} <small>USDC</small></div><div class="status" id="burn-status" style="position:relative">Confirm in your wallet…</div></div>`;
+      try {
+        const st = $("burn-status");
+        await approveIfNeeded(t, t.vault, amount, st);
+        st.textContent = "Confirm the burn in your wallet…";
+        const tx = await new E.Contract(t.vault, cfg.abi.vault, signer).redeem(amount, BigInt(quoteNow.usdcOutWei) * 99n / 100n, Math.floor(Date.now() / 1000) + 600, me);
+        st.textContent = "Burning on-chain…";
+        const rc = await tx.wait();
+        let paid = expect;
+        try { const iface = new E.Interface(cfg.abi.vault); for (const l of rc.logs) { try { const p = iface.parseLog(l); if (p?.name === "Redeemed") paid = N(E.formatEther(p.args.paid)); } catch {} } } catch {}
+        if (!reduced) { const f = document.createElement("div"); f.className = "flash"; document.body.appendChild(f); setTimeout(() => f.remove(), 1000); }
+        S.burn = "done";
+        pane.innerHTML = `<div class="done"><div class="ok">✓ Withdrawn</div><div class="big tab">${usd(paid)}</div><div class="s">USDC · ${tok(E.formatUnits(amount, 18))} ${sym} BURNED · <a href="${explorerTx(rc.hash)}" target="_blank" rel="noopener">TX ↗</a></div><div class="n">Everyone else's floor is unchanged: (R − qR/S) ÷ (S − q) = R/S.</div><button class="b b-oink b-sm" style="margin-top:16px;font-size:12px" id="burn-more">Burn more</button></div>`;
+        $("burn-more").onclick = () => { S.burn = "idle"; renderPane(t); };
+        await refreshWallet(); await loadTokens(true);
+        const fresh = await loadToken(t.token); Object.assign(t, fresh); renderPos(t);
+        const pool = view.querySelector(".cells .cell .v"); if (pool) pool.textContent = usd(t.reserveUsdc);
+      } catch (e) { S.burn = "idle"; renderPane(t); $("burn-status").className = "status err"; $("burn-status").textContent = errMsg(e); }
+    };
+    hold.onpointerdown = start;
+    hold.onpointerup = hold.onpointerleave = hold.onpointercancel = () => { if (timer) reset(); };
+  }
+}
+
+async function approveIfNeeded(t, spender, amount, statusEl) {
+  const token = new E.Contract(t.token, cfg.abi.token, signer);
+  const allowance = await token.allowance(me, spender);
+  if (allowance >= amount) return;
+  if (statusEl) { statusEl.className = "status"; statusEl.textContent = "Approve first · confirm in your wallet"; }
+  await (await token.approve(spender, amount)).wait();
+}
+
+async function loadActivity(t) {
+  const box = $("activity"); if (!box) return;
+  const latest = await readOnly.getBlockNumber();
+  const from = Math.max(0, latest - 4000);
+  const cv = new E.Contract(t.curve, cfg.abi.curve, readOnly), vt = new E.Contract(t.vault, cfg.abi.vault, readOnly);
+  const [buys, sells, burns] = await Promise.all([cv.queryFilter("Buy", from, latest), cv.queryFilter("Sell", from, latest), vt.queryFilter("Redeemed", from, latest)]);
+  const rows = [
+    ...buys.map((l) => ({ bn: l.blockNumber, kind: "BUY", color: "var(--ok)", who: short(l.args.buyer), amt: `${usd(E.formatEther(l.args.quoteIn))} USDC` })),
+    ...sells.map((l) => ({ bn: l.blockNumber, kind: "SELL", color: "var(--dim)", who: short(l.args.seller), amt: `${tok(E.formatUnits(l.args.tokensIn, 18))} ${t.symbol}` })),
+    ...burns.map((l) => ({ bn: l.blockNumber, kind: "BURN", color: "var(--hot)", who: short(l.args.holder), amt: `${tok(E.formatUnits(l.args.burned, 18))} ${t.symbol} → ${usd(E.formatEther(l.args.paid))} USDC` })),
+  ].sort((a, b) => b.bn - a.bn).slice(0, 8);
+  if (!rows.length || !$("activity")) return;
+  const blocks = {}; await Promise.all([...new Set(rows.map((r) => r.bn))].map(async (bn) => { blocks[bn] = (await readOnly.getBlock(bn))?.timestamp; }));
+  const ago = (ts) => { if (!ts) return ""; const s = Math.max(0, Math.floor(Date.now() / 1000 - ts)); return s < 60 ? `${s}s` : s < 3600 ? `${Math.floor(s / 60)}m` : s < 86400 ? `${Math.floor(s / 3600)}h` : `${Math.floor(s / 86400)}d`; };
+  $("act-rows").innerHTML = rows.map((r) => `<div class="act"><span class="kd" style="color:${r.color}">${r.kind}</span><span class="who">${r.who}</span><span class="amt tab">${esc(r.amt)}</span><span class="wh">${ago(blocks[r.bn])}</span></div>`).join("");
+  $("act-note").textContent = `LAST ${latest - from} BLOCKS`;
+  box.hidden = false;
+}
+
+// ------------------------------------------------------------ launch page
+async function viewLaunch() {
+  const f = S.form;
+  if (!cfg.officialToken) {
+    view.innerHTML = `
+  <div class="phead"><div class="in"><span class="kick">Launch a token · ${usd(launchFee)} USDC</span><h1>One transaction.<br>Same rules as everyone.</h1><p>Launches open the moment $ASH is live. Until then the factory refuses every launch, including ours. These are the terms every token will run on:</p></div></div>
+  <div class="in lbody"><div class="box terms"><div class="th k">FIXED TERMS · NOT EDITABLE BY ANYONE</div><div class="fb">${feebar(true)}</div>
+    <div class="tg"><div><div class="k">TRADE FEE</div><b>3%</b></div><div><div class="k">WINDOW</div><b>30 DAYS</b></div><div><div class="k">SUPPLY</div><b>1,000,000,000</b></div><div><div class="k">GRADUATES AT</div><b>${usd(grad)} USDC</b></div><div><div class="k">SNIPE TAX</div><b>99% → 0 IN 3S</b></div><div><div class="k">AFTER DEADLINE</div><b>RESIDUAL → YOU</b></div></div></div>
+  <div class="total"><div class="r"><span>LAUNCH FEE</span><span class="tab">${usd(launchFee)} USDC</span></div><div class="r"><span>OPENING PRICE</span><span class="tab">${usd(virtualQuote / 1e3)} USDC / 1M</span></div><a class="b b-oink" style="width:100%;margin-top:16px" href="https://x.com/AshonArc" target="_blank" rel="noopener">Watch @AshonArc for the date ↗</a></div></div>`;
+    return;
+  }
+  if (S.launched) {
+    const L = S.launched;
+    view.innerHTML = `<div class="phead"><div class="in"><span class="kick">Launch a token · ${usd(launchFee)} USDC</span><h1>One transaction.<br>Same rules as everyone.</h1></div></div>
+    <div class="launched">${particles(36, "ember")}${flame(110).replace('class="flame"', 'class="flame big"')}<div class="k mono">LAUNCHED · BLOCK ${L.block.toLocaleString("en-US")} · SNIPE TAX DECAYING</div><h2>${esc(L.name)}</h2><div class="sy">$${esc(L.sym)}</div>
+      <p>${L.dev > 0 ? `Your opening buy of ${usd(L.dev)} USDC went through tax-free. ` : ""}Redemption closes in exactly 30 days; that deadline is now printed on your token page.</p>
+      <div class="cta"><a class="b b-hot b-sm" href="#/token/${L.token}">Open token page</a><a class="b b-oink b-sm" href="https://x.com/intent/post?text=${encodeURIComponent(`$${L.sym} just launched on AshonArc. Every trade fills a USDC pool; burn to withdraw your share. ${location.origin}/#/token/${L.token}`)}" target="_blank" rel="noopener">Share on X ↗</a></div></div>`;
+    return;
+  }
+  view.innerHTML = `
+  <div class="phead"><div class="in"><span class="kick">Launch a token · ${usd(launchFee)} USDC</span><h1>One transaction.<br>Same rules as everyone.</h1><p>You pick a name and an optional opening buy. Fee, split, window, supply and graduation are fixed in the contract — not by you, not by us.</p></div></div>
+  <div class="in lbody">
+    <div class="form">
+      <div class="r2"><label><span>NAME</span><input id="f-name" value="${esc(f.name)}" placeholder="Arc Frog" maxlength="40" autocomplete="off"></label><label><span>SYMBOL</span><input id="f-sym" class="sym" value="${esc(f.sym)}" placeholder="FROG" maxlength="12" autocomplete="off"></label></div>
+      <label class="full"><span>DESCRIPTION · OPTIONAL</span><textarea id="f-desc" rows="2" placeholder="One line. Say what it is; don't promise a price.">${esc(f.desc)}</textarea></label>
+      <div class="r2b"><label><span>LOGO URL · OPTIONAL</span><input id="f-logo" class="mono" value="${esc(f.logo)}" placeholder="https://…/logo.png" autocomplete="off"></label><label><span>SOCIALS · OPTIONAL</span><input id="f-soc" class="mono" value="${esc(f.socials)}" placeholder="x.com/yourname" autocomplete="off"></label></div>
+      <div class="dev"><div class="lbl"><span>OPENING BUY · OPTIONAL</span><b>SNIPE-TAX EXEMPT FOR YOU</b></div><div class="inrow"><input id="f-dev" value="${esc(f.dev)}" placeholder="0.00" inputmode="decimal" autocomplete="off"><span>USDC</span></div><div class="qrow" style="margin-top:8px"><span id="f-devtok">≈ 0 TKN AT THE OPENING PRICE</span><span id="f-devpct">0.00% OF SUPPLY</span></div></div>
+    </div>
+    <div class="lside">
+      <div class="preview"><div class="k" style="margin-bottom:14px">PREVIEW · HOW IT LISTS</div>
+        <div class="top" style="display:flex;justify-content:space-between;align-items:flex-start"><div style="display:flex;align-items:center;gap:12px"><div class="ini" id="p-ini">??</div><div><div class="disp" id="p-name" style="font-size:20px;line-height:1.1">Your token</div><div class="mono" style="font-size:12px;color:var(--dim)">$<span id="p-sym">TKN</span> · 0x···· pending</div></div></div><span class="tag curve">CURVE</span></div>
+        <div class="pool tab"><span id="p-pool">0.0000</span><small>USDC IN POOL AFTER YOUR BUY</small></div>
+        <div class="bar" style="border-color:var(--ink)"><i id="p-bar" style="width:0%"></i></div></div>
+      <div class="box terms"><div class="th k">FIXED TERMS · NOT EDITABLE BY ANYONE</div><div class="fb">${feebar(true)}</div>
+        <div class="tg"><div><div class="k">TRADE FEE</div><b>3%</b></div><div><div class="k">WINDOW</div><b>30 DAYS</b></div><div><div class="k">SUPPLY</div><b>1,000,000,000</b></div><div><div class="k">GRADUATES AT</div><b>${usd(grad)} USDC</b></div><div><div class="k">SNIPE TAX</div><b>99% → 0 IN 3S</b></div><div><div class="k">AFTER DEADLINE</div><b>RESIDUAL → YOU</b></div></div></div>
+      <div class="total"><div class="r"><span>LAUNCH FEE</span><span class="tab">${usd(launchFee)} USDC</span></div><div class="r"><span>OPENING BUY</span><span class="tab" id="t-dev">0.00 USDC</span></div><div class="sum"><span class="mono" style="font-size:13px">TOTAL</span><b class="tab" id="t-total">${usd(launchFee)} USDC</b></div>
+        <button class="b b-hot" id="f-go" disabled><img src="/logo-256.png" alt=""><span id="f-go-lab">Ignite</span></button><div class="fine">TERMS ABOVE ARE IMMUTABLE AND PUBLIC</div><div class="status" id="f-status"></div></div>
+    </div>
+  </div>`;
+  const sync = () => {
+    f.name = $("f-name").value; f.sym = $("f-sym").value.toUpperCase(); f.desc = $("f-desc").value; f.logo = $("f-logo").value; f.socials = $("f-soc").value; f.dev = $("f-dev").value;
+    const dev = Math.max(0, num(f.dev)), net = dev * 0.97, tokens = virtualQuote > 0 ? 1e9 * net / (virtualQuote + net) : 0;
+    $("p-name").textContent = f.name.trim() || "Your token"; $("p-sym").textContent = f.sym.trim() || "TKN"; $("p-ini").textContent = (f.sym.trim() || "??").slice(0, 2);
+    $("p-pool").textContent = usd(dev * 0.03 * 0.85); $("p-bar").style.width = Math.min(100, grad > 0 ? net / grad * 100 : 0).toFixed(1) + "%";
+    $("f-devtok").textContent = `≈ ${tok(tokens)} ${f.sym.trim() || "TKN"} AT THE OPENING PRICE`; $("f-devpct").textContent = `${(tokens / 1e7).toFixed(2)}% OF SUPPLY`;
+    $("t-dev").textContent = `${usd(dev)} USDC`; $("t-total").textContent = `${usd(launchFee + dev)} USDC`;
+    const ok = !!(f.name.trim() && f.sym.trim()); $("f-go").disabled = !ok; $("f-go-lab").textContent = me ? `Ignite ${f.sym.trim() || "token"}` : "Connect & ignite";
+  };
+  ["f-name", "f-sym", "f-desc", "f-logo", "f-soc", "f-dev"].forEach((id) => $(id).oninput = sync);
+  sync();
+  $("f-go").onclick = async () => {
+    const st = $("f-status"); sync();
+    const name = f.name.trim(), sym = f.sym.trim();
+    if (!name || !sym) return;
+    const dev = Math.max(0, num(f.dev)), devWei = E.parseEther(dev.toString());
+    if (!me) { await connect(); return; }
+    st.className = "status"; st.textContent = "Launching… confirm in your wallet";
+    try {
+      const fac = new E.Contract(cfg.factory, cfg.abi.factory, signer);
+      const tx = await fac.launch(name, sym, { logo: f.logo.trim(), description: f.desc.trim(), socials: f.socials.trim() }, devWei, { value: launchFeeWei + devWei });
+      st.textContent = "Launch sent · waiting for the chain…";
+      const rc = await tx.wait();
+      let token = "";
+      try { const iface = new E.Interface(cfg.abi.factory); for (const l of rc.logs) { try { const p = iface.parseLog(l); if (p?.name === "Launched") token = p.args.token; } catch {} } } catch {}
+      await loadTokens(true);
+      if (!token) token = S.tokens[S.tokens.length - 1]?.token || "";
+      S.launched = { name, sym, dev, token, block: rc.blockNumber, hash: rc.hash };
+      S.form = { name: "", sym: "", desc: "", logo: "", socials: "", dev: "" };
+      await refreshWallet();
+      viewLaunch();
+    } catch (e) { st.className = "status err"; st.textContent = errMsg(e); }
+  };
+}
+
+// ------------------------------------------------------------ docs
+function viewDocs(anchor) {
+  view.innerHTML = "";
+  view.appendChild($("tpl-docs").content.cloneNode(true));
+  view.querySelector('[data-fill="fee"]').textContent = `${usd(launchFee)} USDC`;
+  view.querySelector('[data-fill="grad"]').textContent = `${usd(grad)} USDC`;
+  const link = (a) => a ? `<a href="${explorerAddr(a)}" target="_blank" rel="noopener">${short(a)} ↗</a>` : "";
+  const C = [
+    ["LaunchFactory", cfg.factory, `One-call launch: deploys token, curve and vault, takes the ${usd(launchFee)} USDC fee, records the deadline, executes the issuer's tax-free opening buy.`],
+    ["CurveDeployer", curveDeployerAddr, "Split out of the factory to stay under the EIP-170 size limit; only creates BondingCurve instances."],
+    ["BondingCurve", "", "One per token. buy / sell on the curve, snipe-tax schedule, 3% fee split, issuer claim(), graduation into Uniswap V4, collectFees() after."],
+    ["RedemptionVault", "", "One per token. redeem() and previewRedeem(); fund() for fees; withdrawResidual() for the issuer after the deadline, once."],
+    ["LaunchToken", "", "Plain 1B-supply ERC-20 with burn. No privileged functions."],
+    ["PlatformSink", cfg.platformSink, "Receives the 5% route once the official pool has closed. Holds platform revenue and nothing else."],
+    ["LaunchpadLens", cfg.lens, "Read-only aggregator so the site fetches a whole token view in one call."],
+    ["Uniswap V4 PoolManager", cfg.poolManager, "Uniswap's own, not ours. Every graduated token's pool lives here."],
+  ];
+  $("clist").innerHTML = C.map((c) => `<div><span class="n">${c[0]}${link(c[1])}</span><span>${c[2]}</span></div>`).join("");
+  $("dlist").innerHTML = RULES.map((r, i) => `<div><span class="n">${String(i + 1).padStart(2, "0")}</span><div><div class="t">${r[0]}</div><p>${r[1]}</p></div></div>`).join("");
+  const nav = view.querySelectorAll(".dnav a");
+  const setOn = (id) => nav.forEach((a) => a.classList.toggle("on", a.getAttribute("href").endsWith("#" + id)));
+  setOn(anchor || "d-rule");
+  if (anchor) requestAnimationFrame(() => document.getElementById(anchor)?.scrollIntoView({ block: "start" }));
+}
+
+// ------------------------------------------------------------ router
+function render() {
+  const h = location.hash || "#/";
+  const [path, qs] = h.slice(1).split("?");
+  const params = new URLSearchParams(qs || "");
+  let m;
+  document.querySelectorAll("[data-nav]").forEach((a) => a.classList.remove("on"));
+  const nav = (k) => document.querySelector(`[data-nav="${k}"]`)?.classList.add("on");
+  if (h !== S.route) window.scrollTo(0, 0);
+  S.route = h;
+  if ((m = path.match(/^\/token\/(0x[0-9a-fA-F]{40})/))) return viewToken(m[1], params.get("tab"));
+  if (path.startsWith("/launches")) { nav("launches"); return viewLaunches(); }
+  if (path.startsWith("/launch")) { nav("launch"); return viewLaunch(); }
+  if (path.startsWith("/docs")) { nav("docs"); return viewDocs(path.split("#")[1]); }
+  if (path === "/launches" || path === "#launches") { nav("launches"); return viewLaunches(); }
+  return viewHome();
+}
+window.addEventListener("hashchange", () => { if (location.hash === "#launches") { document.getElementById("launches")?.scrollIntoView({ behavior: "smooth" }); return; } render(); });
+setInterval(() => {
+  document.querySelectorAll("[data-deadline]").forEach((el) => { const ms = Number(el.dataset.deadline) * 1000 - Date.now(); el.textContent = ms <= 0 ? "CLOSED" : cd(ms).split(" ").slice(0, Number(el.dataset.parts || 3)).join(" "); });
+}, 1000);
+setInterval(() => { if (/^#\/?$|^#\/launches/.test(location.hash || "#/") && S.burn === "idle") loadTokens(true).then(render).catch(() => {}); }, 60000);
+if (location.hash === "#launches") location.hash = "#/";
+loadTokens().catch(() => {}); // the rehearsal strip depends on the official symbol, whatever the route
+render();
+})().catch((e) => { document.getElementById("view").innerHTML = `<div class="in" style="padding:96px 32px"><div class="empty">Live data unavailable · ${String(e.message || e).replace(/</g, "&lt;")}</div></div>`; console.error(e); });
+</script>
+</body>
+</html>

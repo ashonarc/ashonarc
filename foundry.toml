@@ -1,0 +1,24 @@
+[profile.default]
+src = "contracts"
+out = "out"
+test = "test"
+libs = ["lib"]
+solc = "0.8.26"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+fs_permissions = [{ access = "read", path = "./" }]
+
+# Only for compiling Uniswap's own PoolManager for the testnet deployment.
+# Mirrors v4-core's settings so the artefact fits under EIP-170.
+[profile.v4]
+via_ir = true
+optimizer_runs = 44444444
+bytecode_hash = "none"
+
+[rpc_endpoints]
+arc = "${ARC_RPC_URL}"
+arc_testnet = "${ARC_TESTNET_RPC_URL}"
+
+[fmt]
+line_length = 118
