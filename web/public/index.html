@@ -991,27 +991,11 @@ function wireCards() {
 }
 
 // ------------------------------------------------------------ token page
-async function viewToken(addr, wantTab) {
-  let t;
-  try { t = await loadToken(addr); } catch (e) { view.innerHTML = `<div class="in" style="padding:96px 32px"><div class="empty">${esc(e.message)} · <a href="#/launches">ALL LAUNCHES</a></div></div>`; return; }
-  if (wantTab) S.tab = wantTab;
-  if (t.graduated && S.tab === "sell") S.tab = "burn";
+function tokenLeftColumn(t) {
   const graduated = t.graduated;
   const price = priceOf(t);
   const floorRatio = price > 0 ? Math.min(999, N(t.backingPerTokenUsdc) / price * 100) : 0;
-  const socials = (t.socials || "").replace(/^https?:\/\//, "");
-  view.innerHTML = `
-  <div class="thead ${t.official ? "official" : ""}"><div class="in">
-    <a class="chip" href="#/launches">← ALL</a>
-    ${iniOf(t)}
-    <div class="tinfo">
-      <div class="ttl"><span class="nm">${esc(t.name)}</span><span class="sy">$${esc(t.symbol)}</span><span class="tag ${t.official ? "official" : graduated ? "grad" : "curve"}">${graduated ? "GRADUATED · UNISWAP V4" : "ON THE CURVE"}${t.official ? " · OFFICIAL" : ""}</span></div>
-      <div class="desc">${esc(t.description || "")}${socials ? ` <a href="https://${esc(socials)}" target="_blank" rel="noopener">${esc(socials)}</a>` : ""}</div>
-    </div>
-    <a class="chip taddr" href="${explorerAddr(t.token)}" target="_blank" rel="noopener">${short(t.token)} ↗</a>
-  </div></div>
-  <div class="in tbody">
-    <div class="tcol">
+  return `
       <div class="meterbox">
         <div class="meter"><div class="k">POOL FILL → GRADUATION</div>
           <div class="tube"><div class="fill" style="height:${progressPct(t).toFixed(1)}%">${reduced ? "" : '<div class="wave"></div>'}</div><div class="lbl">${progressPct(t).toFixed(0)}%</div></div>
@@ -1024,7 +1008,7 @@ async function viewToken(addr, wantTab) {
         </div>
       </div>
       <div class="dl"><span class="chipb">Deadline</span><div><b>${utc(t.deadline)}.</b> After that, anything left in the pool goes to the issuer (${short(t.issuer)}), once. Holding past the deadline pays nothing. Selling usually pays more than burning — compare both quotes.</div></div>
-      <div class="box"><div class="bh"><span style="font-family:var(--display);font-size:16px;color:inherit;letter-spacing:0">Pool ledger</span><span>SINCE LAUNCH</span></div>
+      <div class="box"><div class="bh"><span style="font-family:var(--display);font-size:16px;color:inherit;letter-spacing:0">Pool ledger</span><span>SINCE LAUNCH · LIVE</span></div>
         <div class="ledger">
           <div><div class="k">FEES → POOL</div><div class="v tab">${usd(t.totalFeesToPoolUsdc)} USDC</div></div>
           <div><div class="k">REDEEMED</div><div class="v tab hot">${usd(t.totalRedeemedUsdc)} USDC</div></div>
@@ -1035,8 +1019,28 @@ async function viewToken(addr, wantTab) {
           ${graduated ? `<div><div class="k">BURNED AT GRADUATION</div><div class="v tab">${tok(t.burnedAtGraduation)} ${esc(t.symbol)}</div></div><div style="grid-column:span 2"><div class="k">POOL ID</div><div class="v" style="font-size:11px;font-weight:400;color:var(--dim)">${esc(t.poolId)}</div></div>` : ""}
         </div>
       </div>
-      <div class="box" id="activity" hidden><div class="bh"><span style="font-family:var(--display);font-size:16px;color:inherit;letter-spacing:0">Recent activity</span><span id="act-note"></span></div><div id="act-rows"></div></div>
+      <div class="box" id="activity" hidden><div class="bh"><span style="font-family:var(--display);font-size:16px;color:inherit;letter-spacing:0">Recent activity</span><span id="act-note"></span></div><div id="act-rows"></div></div>`;
+}
+
+async function viewToken(addr, wantTab) {
+  let t;
+  try { t = await loadToken(addr); } catch (e) { view.innerHTML = `<div class="in" style="padding:96px 32px"><div class="empty">${esc(e.message)} · <a href="#/launches">ALL LAUNCHES</a></div></div>`; return; }
+  if (wantTab) S.tab = wantTab;
+  if (t.graduated && S.tab === "sell") S.tab = "burn";
+  const graduated = t.graduated;
+  const socials = (t.socials || "").replace(/^https?:\/\//, "");
+  view.innerHTML = `
+  <div class="thead ${t.official ? "official" : ""}"><div class="in">
+    <a class="chip" href="#/launches">← ALL</a>
+    ${iniOf(t)}
+    <div class="tinfo">
+      <div class="ttl"><span class="nm">${esc(t.name)}</span><span class="sy">$${esc(t.symbol)}</span><span class="tag ${t.official ? "official" : graduated ? "grad" : "curve"}">${graduated ? "GRADUATED · UNISWAP V4" : "ON THE CURVE"}${t.official ? " · OFFICIAL" : ""}</span></div>
+      <div class="desc">${esc(t.description || "")}${socials ? ` <a href="https://${esc(socials)}" target="_blank" rel="noopener">${esc(socials)}</a>` : ""}</div>
     </div>
+    <a class="chip taddr" href="${explorerAddr(t.token)}" target="_blank" rel="noopener">${short(t.token)} ↗</a>
+  </div></div>
+  <div class="in tbody">
+    <div class="tcol">${tokenLeftColumn(t)}</div>
     <aside class="aside">
       <div class="trade">
         <div class="tabs"><button data-tab="buy" class="${S.tab === "buy" ? "on" : ""}">Buy</button><button data-tab="sell" class="${S.tab === "sell" ? "on" : ""}">Sell</button><button data-tab="burn" class="${S.tab === "burn" ? "on" : ""}">Burn</button></div>
@@ -1049,6 +1053,21 @@ async function viewToken(addr, wantTab) {
   renderPane(t);
   renderPos(t);
   loadActivity(t).catch(() => {});
+  // live refresh: numbers and the activity feed every 10 s, without touching the trade pane
+  clearInterval(S.tokenTimer);
+  S.tokenTimer = setInterval(async () => {
+    if (!(location.hash || "").toLowerCase().includes(t.token.toLowerCase())) { clearInterval(S.tokenTimer); return; }
+    if (S.burn !== "idle") return;
+    try {
+      const fresh = await loadToken(t.token);
+      if (fresh.graduated !== t.graduated) { viewToken(t.token, S.tab); return; }
+      Object.assign(t, fresh);
+      const col = view.querySelector(".tcol"); if (col) col.innerHTML = tokenLeftColumn(t);
+      loadActivity(t).catch(() => {});
+      if (me) renderPos(t);
+      for (const id of ["buy-in", "sell-in", "burn-in"]) { const el = $(id); if (el && el.value) el.dispatchEvent(new Event("input")); }
+    } catch {}
+  }, 10000);
 }
 
 function renderPos(t) {
@@ -1322,7 +1341,7 @@ function render() {
   let m;
   document.querySelectorAll("[data-nav]").forEach((a) => a.classList.remove("on"));
   const nav = (k) => document.querySelector(`[data-nav="${k}"]`)?.classList.add("on");
-  if (h !== S.route) window.scrollTo(0, 0);
+  if (h !== S.route) { window.scrollTo(0, 0); clearInterval(S.tokenTimer); }
   S.route = h;
   if ((m = path.match(/^\/token\/(0x[0-9a-fA-F]{40})/))) return viewToken(m[1], params.get("tab"));
   if (path.startsWith("/launches")) { nav("launches"); return viewLaunches(); }
@@ -1335,7 +1354,7 @@ window.addEventListener("hashchange", () => { if (location.hash === "#launches")
 setInterval(() => {
   document.querySelectorAll("[data-deadline]").forEach((el) => { const ms = Number(el.dataset.deadline) * 1000 - Date.now(); el.textContent = ms <= 0 ? "CLOSED" : cd(ms).split(" ").slice(0, Number(el.dataset.parts || 3)).join(" "); });
 }, 1000);
-setInterval(() => { if (/^#\/?$|^#\/launches/.test(location.hash || "#/") && S.burn === "idle") loadTokens(true).then(render).catch(() => {}); }, 60000);
+setInterval(() => { if (/^#\/?$|^#\/launches/.test(location.hash || "#/") && S.burn === "idle") loadTokens(true).then(render).catch(() => {}); }, 20000);
 if (location.hash === "#launches") location.hash = "#/";
 loadTokens().catch(() => {}); // the rehearsal strip depends on the official symbol, whatever the route
 render();
