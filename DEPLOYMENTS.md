@@ -7,7 +7,23 @@ Arc's gas price sat at a flat 20 gwei for months and started moving on 2026-09-1
 A transaction priced below the current base fee is dropped silently — no error, no receipt — so read
 `cast gas-price` before broadcasting and add a margin.
 
-## Production infrastructure — 2026-09-16 (official token not launched yet)
+## $ASH — launched 2026-09-16, block 21,164,618
+
+| | |
+| --- | --- |
+| Token (Ash / ASH) | `0x43dD25d0Ac3D64Ad6dA61e81CDBF83Fbbd4ac33b` |
+| Bonding curve | `0x437b3511f5B52Cac5318aF35Ca4dF4B86cBe032e` |
+| Redemption vault | `0x72609ECB3d1ae3155825634570744af011e0c6dE` |
+| Launch tx | `0x2cf79895d20e0dab6b34f6e091cd414e54a2d3472a847602c905cd0dba59b264` (4,939,514 gas at 79 gwei) |
+| Issuer | `0xe55EBE1Fe460Fc2A9c7D7F3eBF1b213F0f588673` |
+| Opening buy | 80 USDC → 15,282,810.78 ASH (1.53% of supply), tax-free inside the launch tx |
+| Pool deadline | `1792157453` = 2026-10-16 13:30:53 UTC |
+
+Checked right after the block: sink +1 USDC (launch fee); vault = 90% × 3% of all buys; issuer claimable = 10% × 3%; snipe tax 0.
+Within two minutes of the block, seven more buys had arrived from other wallets (about 450 USDC net), all after the
+3-second window. All three contracts verified on Sourcify.
+
+## Production infrastructure — 2026-09-16
 
 Deployer, factory owner and sink owner: `0xe55EBE1Fe460Fc2A9c7D7F3eBF1b213F0f588673`.
 Parameters: virtual reserve **5,000 USDC**, graduation at **10,000 USDC** of real reserve, launch fee **1 USDC**,
@@ -20,9 +36,8 @@ Uniswap V4 PoolManager `0x8366a39CC670B4001A1121B8F6A443A643e40951`. Cost 0.273 
 | LaunchFactory | `0x2274232f228f14A90fce00f7c982D6F4418Fc045` | `0x0e267cc5…258f7303` | 2,777,028 |
 | LaunchpadLens | `0xb51a24f0bc37A85218B2A8cCD21Bf60D2ECD341a` | `0x87f889ed…65812d247` | 2,259,087 |
 
-`officialToken()` is still the zero address. Until the official token is launched the factory refuses every
-third-party `launch()` with `OfficialNotLaunched`. The launch itself is `script/LaunchOfficial.s.sol` with the
-parameters in `deploy/ash-mainnet.env`; the official token's address will be posted on @AshonArc first.
+The official token was launched with `script/LaunchOfficial.s.sol` and the parameters in `deploy/ash-mainnet.env`;
+third-party launches are open since then.
 
 ## Mainnet rehearsal — 2026-09-16
 

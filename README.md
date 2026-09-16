@@ -52,18 +52,19 @@ Arc-specific behaviour the contracts account for: transfers to `address(0)` and 
 addresses revert, so every payout to an external address is pull-based; the mempool drops
 transactions below 20 gwei; timestamps are not strictly increasing across blocks.
 
-Production on Arc mainnet (official token not launched yet):
+Production on Arc mainnet:
 
 | | |
 | --- | --- |
+| **$ASH token** | `0x43dD25d0Ac3D64Ad6dA61e81CDBF83Fbbd4ac33b` |
+| $ASH curve / vault | `0x437b3511f5B52Cac5318aF35Ca4dF4B86cBe032e` / `0x72609ECB3d1ae3155825634570744af011e0c6dE` |
 | LaunchFactory | `0x2274232f228f14A90fce00f7c982D6F4418Fc045` |
 | LaunchpadLens | `0xb51a24f0bc37A85218B2A8cCD21Bf60D2ECD341a` |
 | CurveDeployer | `0x97F5427f419d7713dC1bBfc9Bd34e6278323B947` |
 | PlatformSink | `0xa26B26B855e7Be58111840959C03bdCE4de7Cc41` |
 
 Every address above is verified on [Sourcify](https://sourcify.dev) (chain 5042). Transaction hashes and the
-account-level checks for every rehearsal are in [DEPLOYMENTS.md](DEPLOYMENTS.md). The official token's
-address will be posted on [@AshonArc](https://x.com/AshonArc) before anywhere else.
+account-level checks for every rehearsal are in [DEPLOYMENTS.md](DEPLOYMENTS.md).
 
 ## Repository
 
